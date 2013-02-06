@@ -8,11 +8,13 @@
 package edu.wpi.first.wpilibj.templates;
 
 import Controllers.ControllerGamePad;
+import Controllers.ControllerShooterEncoders;
 import Events.EventAutonomous;
 import Events.EventTeleop;
 import Events.RobotEvent;
 import Events.RobotEventListener;
 import Systems.SystemDrive;
+import Systems.SystemShooter;
 import Util2415.CSVReader;
 
 
@@ -29,14 +31,18 @@ import java.util.Vector;
 public class Robot extends SimpleRobot
 {
     
+    Vector listeners = new Vector(5);
+    
     //fires events to the systems to tell them state changes
     //such as AUTONOMOUS, or DISABLED
     
     
     ControllerGamePad controllerGamePad;
+    ControllerShooterEncoders controllerShooterEncoders;
     
     
     SystemDrive systemDrive;
+    SystemShooter systemShooter;
     
     SmartDashboardUpdater smartdashboardupdater;
     
@@ -49,15 +55,20 @@ public class Robot extends SimpleRobot
     //but I like keeping consistent and 
     //using our event system.
     
-    Thread gamepadthread;
-    Thread drivethread;
+    Thread gamepadThread;
+    Thread driveThread;
     Thread sduThread;
+    Thread shootEncoderThread;
+    Thread shooterThread;
     
     public Robot()
     {
         //starts up the systems and controllers.
         controllerGamePad = new ControllerGamePad(5, this);
-        gamepadthread = new Thread(controllerGamePad);
+        controllerShooterEncoders = new ControllerShooterEncoders(5, this);
+        
+        gamepadThread = new Thread(controllerGamePad);
+        shootEncoderThread = new Thread(controllerShooterEncoders);
         
         //creates the smart Dashboard. All file reading is done through it,
         //so this is where the filename is going to be put.
@@ -71,7 +82,15 @@ public class Robot extends SimpleRobot
         //to make sure it updates their values.
         smartdashboardupdater.addSubscribedSystem(systemDrive);
         //creates drive thread.
-        drivethread = new Thread(systemDrive);
+        driveThread = new Thread(systemDrive);
+        
+        //setting up systemShooter
+        systemShooter = new SystemShooter();
+        controllerGamePad.addEventListener(systemShooter);
+        controllerShooterEncoders.addEventListener(systemShooter);
+        this.addEventListener(systemDrive);
+        smartdashboardupdater.addSubscribedSystem(systemDrive);
+        shooterThread = new Thread(systemShooter);
         
         
         //creates the SmartDashboard thread.
@@ -82,10 +101,11 @@ public class Robot extends SimpleRobot
 //        System.out.println(CSVReader.getValue("TESTING_VALUE"));
         
         //starts the threads.
-        drivethread.start();
-        gamepadthread.start();
+        driveThread.start();
+        gamepadThread.start();
         sduThread.start();
-        
+        shooterThread.start();
+        shootEncoderThread.start();
     }
     
     /**
@@ -95,7 +115,11 @@ public class Robot extends SimpleRobot
     {
         //fire autonomous event.
         fireEvent(new EventAutonomous(this));
-        
+        while(isAutonomous())
+        {
+        getWatchdog().feed();
+        Thread.yield();
+        }
     }
 
     /**
@@ -105,6 +129,22 @@ public class Robot extends SimpleRobot
     {
         //fires teleop event.
         fireEvent(new EventTeleop(this));
+        
+        while(isOperatorControl())
+        {
+        getWatchdog().feed();
+        Thread.yield();
+        }
+    }
+    
+    public void disabled()
+    {
+        
+        while (isDisabled())
+        {
+            getWatchdog().feed();
+            Thread.yield();
+        }
     }
     
     /**
@@ -116,7 +156,38 @@ public class Robot extends SimpleRobot
         //test that.
     }
     
-    Vector listeners = new Vector(5);
+    private void initControllers()
+    {
+        //starts up the systems and controllers.
+        controllerGamePad = new ControllerGamePad(5, this);
+        controllerShooterEncoders = new ControllerShooterEncoders(5, this);
+        
+        gamepadThread = new Thread(controllerGamePad);
+        shootEncoderThread = new Thread(controllerShooterEncoders);
+    }
+    
+    private void initDrive()
+    {
+        //setting up systemDrive, adding all the things it listens to/ interacts with.
+        systemDrive = new SystemDrive();
+        controllerGamePad.addEventListener(systemDrive);
+        this.addEventListener(systemDrive);
+        //systems have to subscribe to the smartdashboardupdater
+        //to make sure it updates their values.
+        smartdashboardupdater.addSubscribedSystem(systemDrive);
+        //creates drive thread.
+        driveThread = new Thread(systemDrive);
+    }
+    
+    private void initShooter()
+    {
+        //setting up systemShooter
+        systemShooter = new SystemShooter();
+        controllerGamePad.addEventListener(systemShooter);
+        this.addEventListener(systemDrive);
+        smartdashboardupdater.addSubscribedSystem(systemDrive);
+        shooterThread = new Thread(systemShooter);
+    }
     
     private synchronized void addEventListener(RobotEventListener l)
     {
