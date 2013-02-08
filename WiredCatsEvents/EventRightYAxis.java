@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
@@ -10,9 +10,9 @@ package Events;
  */
 public class EventRightYAxis extends EventGamePad
 {
-    public int y;
+    public double y;
     
-    public EventRightYAxis(Object source, byte controllerID, int y)
+    public EventRightYAxis(Object source, byte controllerID, double y)
     {
         super(source,controllerID);
         this.y = y;

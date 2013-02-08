@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
@@ -10,9 +10,9 @@ package Events;
  */
 public class EventLeftYAxis extends EventGamePad
 {
-    public int y; //it's a percentage, -100% to 100%
+    public double y; //it's a percentage, -100% to 100%
     
-    public EventLeftYAxis(Object source, byte controllerID, int y)
+    public EventLeftYAxis(Object source, byte controllerID, double y)
     {
         super(source, controllerID);
         this.y = y;

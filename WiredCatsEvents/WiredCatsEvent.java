@@ -2,13 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
  * @author Robotics
  */
-public abstract class RobotEvent 
+public abstract class WiredCatsEvent 
 {
     
     private Object source;
@@ -18,7 +18,7 @@ public abstract class RobotEvent
         return source;
     }
     
-    public RobotEvent(Object source)
+    public WiredCatsEvent(Object source)
     {
         this.source = source;
     }

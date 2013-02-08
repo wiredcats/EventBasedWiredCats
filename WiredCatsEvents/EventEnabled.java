@@ -2,18 +2,16 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
  * @author Robotics
  */
-public class EventDisabled extends EventStateChange
+public class EventEnabled extends EventStateChange
 {
-    
-    public EventDisabled(Object source)
+    public EventEnabled(Object source)
     {
         super(source);
     }
-    
 }

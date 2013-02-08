@@ -2,25 +2,24 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controllers;
+package WiredCatsControllers;
 
-import Events.EventOverDesiredSpeed;
-import Events.EventUnderDesiredSpeed;
+import WiredCatsEvents.EventOverDesiredSpeed;
+import WiredCatsEvents.EventUnderDesiredSpeed;
 import Util2415.CSVReader;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.templates.Robot;
-import edu.wpi.first.wpilibj.templates.SmartDashboardUpdater;
+import edu.wpi.first.wpilibj.templates.WiredCats2415;
 import java.util.Vector;
 
 /**
  *
  * @author Robotics
  */
-public class ControllerShooterEncoders extends RobotController
+public class ControllerShooterEncoders extends WiredCatsController
 {
     
-    private Robot robot;
+    private WiredCats2415 robot;
     
     private Encoder encoder1;
     private Encoder encoder2;
@@ -31,17 +30,13 @@ public class ControllerShooterEncoders extends RobotController
     private double desiredEncoder1Speed;
     private double desiredEncoder2Speed;
     
-    public ControllerShooterEncoders(int limit, Robot robot)
+    public ControllerShooterEncoders(int limit, WiredCats2415 robot)
     {
         super(limit, robot);
         
         //TODO get coder ports, a channel and b channel.
         encoder1 = new Encoder(1,2);
-        encoder2 = new Encoder(3,4);
-                
-        requestedValues = new String[2];
-        requestedValues[0] = "DESIRED_ENCODER_1_SPEED";
-        requestedValues[1] = "DESIRED_ENCODER_2_SPEED";
+        encoder2 = new Encoder(4,3);
         
     }
     
@@ -54,17 +49,19 @@ public class ControllerShooterEncoders extends RobotController
         
         while (true)
         {
-            encoder1Rate = encoder1.getRate();
-            encoder2Rate = encoder2.getRate();
+            encoder1Rate = encoder1.getRate() / 2; //convertig fromt ticks per second, to revolutions per minute.
+            encoder2Rate = encoder2.getRate() / 2;
             
-            desiredEncoder1Speed = SmartDashboardUpdater.csvreader.getValue("DESIRED_ENCODER_1_SPEED");
-            desiredEncoder2Speed = SmartDashboardUpdater.csvreader.getValue("DESIRED_ENCODER_2_SPEED");
+            desiredEncoder1Speed = 5000;
+            desiredEncoder2Speed = 7000;
+            
+          
              
 //            System.out.println("---------------");
-            //SmartDashboard.putNumber("speed of motor", encoder1Rate);
+            SmartDashboard.putNumber("speed of motor", encoder1Rate);
 //            System.out.println("Motor 1: " + encoder1Rate);
-            //SmartDashboard.putNumber("speed of second motor", encoder2Rate);
-//            System.out.println("Motor 2: " + encoder2Rate);
+            SmartDashboard.putNumber("speed of second motor", encoder2Rate);
+            //System.out.println("Motor 2: " + encoder2Rate);
             
             if (encoder1Rate > desiredEncoder1Speed)
             {
@@ -75,7 +72,8 @@ public class ControllerShooterEncoders extends RobotController
             else if (encoder1Rate < desiredEncoder1Speed)
             {
 //                System.out.println("Firing event 1 under desired speed.");
-                fireEvent(new EventOverDesiredSpeed(this, EventOverDesiredSpeed.ENCODER_1));
+                fireEvent(new EventUnderDesiredSpeed(this, EventUnderDesiredSpeed.ENCODER_1));
+                //System.out.println(encoder1Rate);
             }
             
             if (encoder2Rate > desiredEncoder2Speed)

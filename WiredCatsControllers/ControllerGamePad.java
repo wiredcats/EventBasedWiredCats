@@ -2,21 +2,25 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controllers;
+package WiredCatsControllers;
 
-import Events.EventDisabled;
-import Events.EventEnabled;
-import Events.EventGamePad;
-import Events.EventLeftYAxis;
-import Events.EventRightYAxis;
+import WiredCatsEvents.EventButtonAPressed;
+import WiredCatsEvents.EventButtonAReleased;
+import WiredCatsEvents.EventDisabled;
+import WiredCatsEvents.EventEnabled;
+import WiredCatsEvents.EventGamePad;
+import WiredCatsEvents.EventLeftYAxis;
+import WiredCatsEvents.EventRightBumperPressed;
+import WiredCatsEvents.EventRightBumperReleased;
+import WiredCatsEvents.EventRightYAxis;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.templates.Robot;
+import edu.wpi.first.wpilibj.templates.WiredCats2415;
 
 /**
  *
  * @author Robotics
  */
-public class ControllerGamePad extends RobotController implements Runnable
+public class ControllerGamePad extends WiredCatsController implements Runnable
 {
     
     
@@ -32,7 +36,7 @@ public class ControllerGamePad extends RobotController implements Runnable
     
     private static final short SLEEP_TIME = 100; //in milliseconds
 
-    public ControllerGamePad(int limit, Robot robot)
+    public ControllerGamePad(int limit, WiredCats2415 robot)
     {
         super(limit, robot);
         
@@ -102,8 +106,13 @@ public class ControllerGamePad extends RobotController implements Runnable
             newGP.button_B = js.getRawButton(2);
             newGP.button_X = js.getRawButton(3);
             newGP.button_Y = js.getRawButton(4);
-            newGP.leftThumbstickY = (int)(100* js.getRawAxis(2));
-            newGP.rightThumbstickY = (int)(100* js.getRawAxis(5));
+            newGP.right_Bumper = js.getRawButton(6);
+            
+            //for these we need to dead band, 
+            //I think that's what it's called...
+            //so I just have a private function that takes care of that.
+            newGP.leftThumbstickY = getAxisValue(js.getRawAxis(2));
+            newGP.rightThumbstickY = getAxisValue(js.getRawAxis(5));
             
             
             
@@ -134,16 +143,62 @@ public class ControllerGamePad extends RobotController implements Runnable
             if (oldGP.leftThumbstickY != newGP.leftThumbstickY)
             {
                 //send a thumbstick event.
-                System.out.println("Firing left Thumbstick Event");
-                fireEvent(new EventLeftYAxis(this, EventLeftYAxis.CONTROLLER_1, newGP.leftThumbstickY));
+//                System.out.println("Firing left Thumbstick Event");
+                fireEvent(new EventLeftYAxis(this, whichController, newGP.leftThumbstickY));
                 oldGP.leftThumbstickY = newGP.leftThumbstickY;
             }
             if (oldGP.rightThumbstickY != newGP.rightThumbstickY)
             {
-                System.out.println("Firing right Thumbstick Event");
-                fireEvent(new EventRightYAxis(this, EventRightYAxis.CONTROLLER_1, newGP.rightThumbstickY));
+//                System.out.println("Firing right Thumbstick Event");
+                fireEvent(new EventRightYAxis(this, whichController, newGP.rightThumbstickY));
                 oldGP.rightThumbstickY = newGP.rightThumbstickY;
             }
+            if (newGP.right_Bumper != oldGP.right_Bumper)
+            {
+                if (newGP.right_Bumper)
+                {
+                    fireEvent(new EventRightBumperPressed(this, whichController));
+                }
+                else
+                {
+                    fireEvent(new EventRightBumperReleased(this, whichController));
+                }
+                oldGP.right_Bumper = newGP.right_Bumper;
+                
+            }
+            if (newGP.button_A != oldGP.button_A)
+            {
+                if (newGP.button_A)
+                {
+                    fireEvent(new EventButtonAPressed(this, whichController));
+                }
+                else
+                {
+                    fireEvent(new EventButtonAReleased(this, whichController));
+                }
+                oldGP.button_A = newGP.button_A;
+            }
+        }
+        
+        /**
+         * Grabs the value of the joystick,
+         * but returns a percentage because
+         * integers are easier to work with.
+         * @param i
+         * @return 
+         */
+        private double getAxisValue(double outputValue)
+        {
+            double CONTROLLER_DEADBAND = .08;//(int)(SmartDashboardUpdater.csvreader.getValue("CONTROLLER_DEADBAND"));
+            
+            //System.out.println(newValue);
+            
+            if (Math.abs(outputValue) < CONTROLLER_DEADBAND) //in percentages.
+            {
+                return 0; //can be treated as zero.
+            }          
+
+            return (outputValue - CONTROLLER_DEADBAND)/(1 - CONTROLLER_DEADBAND);
         }
    /**
     * This is an object that holds onto all the information of the controller,
@@ -157,8 +212,8 @@ public class ControllerGamePad extends RobotController implements Runnable
         public boolean button_Y;
         public boolean right_Bumper;
         public boolean left_Bumper;
-        public int leftThumbstickY;
-        public int rightThumbstickY;
+        public double leftThumbstickY;
+        public double rightThumbstickY;
         
         public GamePad()
         {
@@ -169,8 +224,8 @@ public class ControllerGamePad extends RobotController implements Runnable
             button_Y = false;
             right_Bumper = false;
             left_Bumper = false;
-            leftThumbstickY = 0;
-            rightThumbstickY = 0;
+            leftThumbstickY = 0.0;
+            rightThumbstickY = 0.0;
         }
         
         //deprecated

@@ -2,13 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
  * @author Robotics
  */
-public class EventGamePad extends RobotEvent
+public class EventGamePad extends WiredCatsEvent
 {
     public static final byte CONTROLLER_1 = 1;
     public static final byte CONTROLLER_2 = 2;

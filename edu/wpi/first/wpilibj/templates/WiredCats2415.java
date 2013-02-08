@@ -7,28 +7,21 @@
 
 package edu.wpi.first.wpilibj.templates;
 
-import Controllers.ControllerGamePad;
-import Controllers.ControllerShooterEncoders;
-import Events.EventAutonomous;
-import Events.EventTeleop;
-import Events.RobotEvent;
-import Events.RobotEventListener;
-import Systems.SystemDrive;
-import Systems.SystemShooter;
+import WiredCatsControllers.ControllerGamePad;
+import WiredCatsControllers.ControllerShooterEncoders;
+import WiredCatsEvents.EventAutonomous;
+import WiredCatsEvents.EventTeleop;
+import WiredCatsEvents.WiredCatsEvent;
+import WiredCatsEvents.WiredCatsEventListener;
+import WiredCatsSystems.SystemDrive;
+import WiredCatsSystems.SystemShooter;
 import Util2415.CSVReader;
 
 
 import edu.wpi.first.wpilibj.SimpleRobot;
 import java.util.Vector;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the SimpleRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- */
-public class Robot extends SimpleRobot
+public class WiredCats2415 extends SimpleRobot
 {
     
     Vector listeners = new Vector(5);
@@ -43,8 +36,6 @@ public class Robot extends SimpleRobot
     
     SystemDrive systemDrive;
     SystemShooter systemShooter;
-    
-    SmartDashboardUpdater smartdashboardupdater;
     
     //the robot class itself is a
     //controller, because the
@@ -61,49 +52,14 @@ public class Robot extends SimpleRobot
     Thread shootEncoderThread;
     Thread shooterThread;
     
-    public Robot()
+    public WiredCats2415()
     {
-        //starts up the systems and controllers.
-        controllerGamePad = new ControllerGamePad(5, this);
-        controllerShooterEncoders = new ControllerShooterEncoders(5, this);
+        initControllers();
+        //initDrive();
+        initShooter();
         
-        gamepadThread = new Thread(controllerGamePad);
-        shootEncoderThread = new Thread(controllerShooterEncoders);
-        
-        //creates the smart Dashboard. All file reading is done through it,
-        //so this is where the filename is going to be put.
-        smartdashboardupdater = new SmartDashboardUpdater("CheesyConfig.txt");
-        
-        //setting up systemDrive, adding all the things it listens to/ interacts with.
-        systemDrive = new SystemDrive();
-        controllerGamePad.addEventListener(systemDrive);
-        this.addEventListener(systemDrive);
-        //systems have to subscribe to the smartdashboardupdater
-        //to make sure it updates their values.
-        smartdashboardupdater.addSubscribedSystem(systemDrive);
-        //creates drive thread.
-        driveThread = new Thread(systemDrive);
-        
-        //setting up systemShooter
-        systemShooter = new SystemShooter();
-        controllerGamePad.addEventListener(systemShooter);
-        controllerShooterEncoders.addEventListener(systemShooter);
-        this.addEventListener(systemDrive);
-        smartdashboardupdater.addSubscribedSystem(systemDrive);
-        shooterThread = new Thread(systemShooter);
-        
-        
-        //creates the SmartDashboard thread.
-        sduThread = new Thread(smartdashboardupdater);
-        
-        
-        //CSVReader.getFromFile("CheesyConfig.txt");
-//        System.out.println(CSVReader.getValue("TESTING_VALUE"));
-        
-        //starts the threads.
-        driveThread.start();
+        //driveThread.start();
         gamepadThread.start();
-        sduThread.start();
         shooterThread.start();
         shootEncoderThread.start();
     }
@@ -115,11 +71,6 @@ public class Robot extends SimpleRobot
     {
         //fire autonomous event.
         fireEvent(new EventAutonomous(this));
-        while(isAutonomous())
-        {
-        getWatchdog().feed();
-        Thread.yield();
-        }
     }
 
     /**
@@ -130,21 +81,11 @@ public class Robot extends SimpleRobot
         //fires teleop event.
         fireEvent(new EventTeleop(this));
         
-        while(isOperatorControl())
-        {
-        getWatchdog().feed();
-        Thread.yield();
-        }
     }
     
     public void disabled()
     {
-        
-        while (isDisabled())
-        {
-            getWatchdog().feed();
-            Thread.yield();
-        }
+
     }
     
     /**
@@ -172,9 +113,6 @@ public class Robot extends SimpleRobot
         systemDrive = new SystemDrive();
         controllerGamePad.addEventListener(systemDrive);
         this.addEventListener(systemDrive);
-        //systems have to subscribe to the smartdashboardupdater
-        //to make sure it updates their values.
-        smartdashboardupdater.addSubscribedSystem(systemDrive);
         //creates drive thread.
         driveThread = new Thread(systemDrive);
     }
@@ -184,26 +122,26 @@ public class Robot extends SimpleRobot
         //setting up systemShooter
         systemShooter = new SystemShooter();
         controllerGamePad.addEventListener(systemShooter);
-        this.addEventListener(systemDrive);
-        smartdashboardupdater.addSubscribedSystem(systemDrive);
+        controllerShooterEncoders.addEventListener(systemShooter);
+        this.addEventListener(systemShooter);
         shooterThread = new Thread(systemShooter);
     }
     
-    private synchronized void addEventListener(RobotEventListener l)
+    private synchronized void addEventListener(WiredCatsEventListener l)
     {
         listeners.addElement(l);
     }
     
-    private synchronized void removeEventListener(RobotEventListener l)
+    private synchronized void removeEventListener(WiredCatsEventListener l)
     {
         listeners.removeElement(l);
     }
     
-    private synchronized void fireEvent(RobotEvent e)
+    private synchronized void fireEvent(WiredCatsEvent e)
     {
         for (int i = 0; i < listeners.size(); i++)
         {
-            ((RobotEventListener)(listeners.elementAt(i))).eventReceived(e);
+            ((WiredCatsEventListener)(listeners.elementAt(i))).eventReceived(e);
         }
     }
 }

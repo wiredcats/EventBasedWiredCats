@@ -2,15 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
  * @author Robotics
  */
-public interface RobotEventListener 
+public interface WiredCatsEventListener 
 {
        
     
-    public void eventReceived(RobotEvent re);
+    public void eventReceived(WiredCatsEvent re);
 }

@@ -2,15 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Events;
+package WiredCatsEvents;
 
 /**
  *
  * @author Robotics
  */
-public class EventButtonAPressed extends EventGamePad
+public class EventRightBumperReleased extends EventGamePad
 {
-    public EventButtonAPressed(Object source, byte controllerID)
+    public EventRightBumperReleased(Object source, byte controllerID)
     {
         super(source, controllerID);
     }
