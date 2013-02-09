@@ -1,27 +1,22 @@
 package Util2415;
 
 import java.util.Hashtable;
-import java.lang.Double;
 
 /**
- * Code to read from CSV file and reupdate constants
+ * Code to read from .txt file and reupdate constants
  *
  * @author SamCrane
  */
-public class CSVReader {
+public class TXTReader {
 
-    // They use a sort of pidgin Hashtable which works slightly differently
-    // http://docs.oracle.com/javame/config/cldc/ref-impl/cldc1.1/jsr139/index.html
-    
     private Hashtable resources = new Hashtable();
 
     public double getValue(String s) {
-        CSVReader.OurDouble d = (CSVReader.OurDouble)resources.get(s); 
+        TXTReader.OurDouble d = (TXTReader.OurDouble) resources.get(s);
         return d.d;
     }
-    
-    public void setValue(String s, double d)
-    {
+
+    public void setValue(String s, double d) {
         resources.put(s, new OurDouble(d));
     }
 
@@ -29,10 +24,10 @@ public class CSVReader {
         try {
             Scanner sc = new Scanner(s);
             String tempString;
-            CSVReader.OurDouble tempDouble;
+            TXTReader.OurDouble tempDouble;
             while (sc.hasNext()) {
                 tempString = sc.next();
-                tempDouble = new CSVReader.OurDouble( Double.parseDouble(sc.next()) );
+                tempDouble = new TXTReader.OurDouble(Double.parseDouble(sc.next()));
                 resources.put(tempString, tempDouble);
             }
             sc.close();
@@ -41,19 +36,21 @@ public class CSVReader {
             System.exit(-1);
         }
     }
-    
-    public boolean contains(String s)
-    {
+
+    public boolean contains(String s) {
         return resources.contains(s);
     }
     
-    private class OurDouble
-    {
+    /*
+     * Nested class of "OurDouble" in order to be able to get the Hashmap working
+     * For some reason, it does not play nice with the real "Double" class
+     */
+    private class OurDouble {
         public double d;
-        
-        public OurDouble(double d1)
-        {
+
+        public OurDouble(double d1) {
             this.d = d1;
         }
     }
+    
 }

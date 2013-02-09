@@ -2,13 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package WiredCatsEvents;
+package WiredCatsEvents.SensorEvents;
+
+import WiredCatsEvents.WiredCatsEvent;
 
 /**
  *
  * @author Robotics
  */
-public class EventUnderDesiredSpeed extends WiredCatsEvent
+public class EventOverDesiredSpeed extends WiredCatsEvent
 {
     
     public static final byte ENCODER_1 = 1;
@@ -16,9 +18,8 @@ public class EventUnderDesiredSpeed extends WiredCatsEvent
     
     public byte encoderID;
     
-    public EventUnderDesiredSpeed(Object source, byte encoderID)
+    public EventOverDesiredSpeed(Object object, byte encoderID)
     {
-        super(source);
-        this.encoderID = encoderID;
+        super(object);
     }
 }

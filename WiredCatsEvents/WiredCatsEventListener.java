@@ -1,16 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package WiredCatsEvents;
 
 /**
+ * Interface for event listeners. 
+ * Requires event listeners to be able to deal with different events
  *
  * @author Robotics
  */
-public interface WiredCatsEventListener 
-{
-       
+public interface WiredCatsEventListener {
     
     public void eventReceived(WiredCatsEvent re);
+    
 }

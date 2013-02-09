@@ -27,10 +27,9 @@ public class Scanner {
         }
     }
 
-    /* returns the next word in
-     * the stream of data. A quirk to this
-     * method is that if it finds the specified
-     * "halt" value, '#'
+    /* 
+     * Returns the next word in the stream of data. 
+     * A quirk to this method is that if it finds the specified "halt" value, '#'
      */
     public String next() {
         String s = "";
@@ -60,12 +59,12 @@ public class Scanner {
         }
         return s;
     }
-
-    public boolean hasNext() {
-        return !endOfFile; //they are logical opposites
-        //the last piece of information will end
-        //end in '#', to notify end of file.
-    }
+    
+    /*
+     * Since EOF and hasNext are logical opposites, we can define it as such
+     * The last piece of information will end in '#' to notify end of file
+     */
+    public boolean hasNext() { return !endOfFile; }
 
     public void close() {
         try {
