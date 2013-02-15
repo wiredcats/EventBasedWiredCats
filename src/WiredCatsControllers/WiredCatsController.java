@@ -1,6 +1,6 @@
 package WiredCatsControllers;
 
-import Util2415.WiredCatsEventLogger;
+import Util2415.WiredCatsLogger;
 import WiredCatsEvents.WiredCatsEvent;
 import WiredCatsEvents.WiredCatsEventListener;
 import edu.wpi.first.wpilibj.templates.WiredCats2415;
@@ -25,7 +25,6 @@ public abstract class WiredCatsController implements Runnable {
     public synchronized void removeEventListener(WiredCatsEventListener l) { listeners.removeElement(l);}
 
     protected synchronized void fireEvent(WiredCatsEvent e) {
-        if (WiredCats2415.logWriter.isOpen()) WiredCats2415.logWriter.logEvent(e);
         for (int i = 0; i < listeners.size(); i++) {
             ((WiredCatsEventListener) (listeners.elementAt(i))).eventReceived(e);
         }

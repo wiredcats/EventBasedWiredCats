@@ -12,7 +12,7 @@ package edu.wpi.first.wpilibj.templates;
  * since we do not want to constantly add new systems
  */
 
-import Util2415.WiredCatsEventLogger;
+import Util2415.WiredCatsLogger;
 import WiredCatsControllers.*;
 import WiredCatsEvents.WiredCatsEventListener;
 import WiredCatsEvents.WiredCatsEvent;
@@ -29,7 +29,7 @@ import java.util.Vector;
 /**
  * Main Robot Class.
  * This is based on the SimpleRobot template and starts all of the other systems.
- * Also acts as a WiredCatsController as it fires state change events such as AUTNOMOUS or DISABLED
+ * Also acts as a WiredCatsController as it fires state change events such as AUTONOMOUS or DISABLED
  * 
  * @author Bruce Crane
  */
@@ -38,7 +38,7 @@ public class WiredCats2415 extends SimpleRobot
 {
 
     public static TXTReader textReader;
-    public static WiredCatsEventLogger logWriter;
+    public WiredCatsLogger logWriter;
     
     private Vector listeners = new Vector(5);
     private Vector threads = new Vector(5);
@@ -56,15 +56,18 @@ public class WiredCats2415 extends SimpleRobot
     {
         textReader = new TXTReader();
         textReader.getFromFile("CheesyConfig.txt");
-        logWriter = new WiredCatsEventLogger();
 //        logWriter.newLog();
     }
     
     public WiredCats2415() {
+        logWriter = new WiredCatsLogger();
+        threads.addElement(logWriter);
         initControllers();
 //        initDrive();
         //initShooter();
         //initIntake();
+        
+        //logWriter.addSystems(systemDrive, systemIntake, systemShooter);
         
         for (int i = 0; i < threads.size(); i++) {
             ((Thread) (threads.elementAt(i))).start();
@@ -80,11 +83,14 @@ public class WiredCats2415 extends SimpleRobot
     { 
         fireEvent(new EventDisabled(this)); 
         if (logWriter.isOpen()) logWriter.close();
+        textReader.getFromFile("CheesyConfig.txt");
     }
     public void autonomous() 
     { 
         //TODO make 100 dollars.
+        controllerDrive.resetEncoders();
         fireEvent(new EventAutonomous(this)); 
+        
     }
     public void operatorControl() 
     { 

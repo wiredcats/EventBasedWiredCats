@@ -6,6 +6,7 @@ import WiredCatsEvents.WiredCatsEvent;
 import WiredCatsEvents.WiredCatsEventListener;
 
 import Util2415.BlockingQueue;
+import WiredCatsEvents.AutonomousCommands.AutonomousCommand;
 
 /**
  * The RobotSystem is an abstract class that is used to create the Systems of
@@ -21,6 +22,12 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     public static final byte STATE_AUTONOMOUS = 1;
     public static final byte STATE_TELEOP = 2;
     protected byte state = -1;
+    
+    public static final byte AUTONOMOUS_WAITING = 0;
+    public static final byte AUTONOMOUS_ATTEMPTING = 0;
+    public static final byte AUTONOMOUS_COMPLETED = 0;
+    protected byte autonomous_state = -1;
+    
 
     public WiredCatsSystem() {
         events = new BlockingQueue(5);
@@ -46,6 +53,7 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
                     else if(state == STATE_TELEOP) doTeleop(event);
 
                 }
+                update();
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -54,8 +62,10 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     }
     
     public abstract void doDisabled(WiredCatsEvent event);
-    public abstract void doAutonomous(WiredCatsEvent event);
+    public abstract void doAutonomous(WiredCatsEvent command);
     public abstract void doTeleop(WiredCatsEvent event);
+    public abstract void update();
+    public abstract byte autonomous_AtDesiredNode();
 
     /**
      * An abstract method that is called by any RobotController that this system

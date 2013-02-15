@@ -4,6 +4,7 @@
  */
 package WiredCatsControllers;
 
+import WiredCatsEvents.SensorEvents.EventArmAngleChanged;
 import WiredCatsEvents.SensorEvents.EventFrisbeeTaken;
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -40,7 +41,8 @@ public class ControllerIntake extends WiredCatsController
         
         while (true)
         {
-            SmartDashboard.putNumber("POT reading: ", arm.getVoltage());
+            SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
+            SmartDashboard.putNumber("POT reading (getVoltage): ", arm.getVoltage());
             //get pot of absolutely up.
             //get pot of absolutely down.
             //154
@@ -54,14 +56,15 @@ public class ControllerIntake extends WiredCatsController
                 isSwitchPressed = false;
             }
             
+            double currentArmAngle = arm.getValue();
+            if (armAngle != currentArmAngle)
+            {
+                armAngle = currentArmAngle;
+                fireEvent(new EventArmAngleChanged(this, armAngle));
+            }
+            
         }
     }
-    
-    public double getArm()
-    {
-        return arm.getVoltage();
-    }
-    
 //    private get ArmAngle(double encoderValue) {}
     
 }

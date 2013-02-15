@@ -4,6 +4,7 @@
  */
 package WiredCatsSystems;
 
+import WiredCatsEvents.AutonomousCommands.CommandShoot;
 import WiredCatsEvents.EventGamePad;
 import WiredCatsEvents.EventStateChange;
 import WiredCatsEvents.GamePadEvents.*;
@@ -42,8 +43,8 @@ public class SystemShooter extends WiredCatsSystem {
 
     public SystemShooter() {
         super();
-        wheel1 = new Victor(7);
-        wheel2 = new Victor(8);
+        wheel1 = new Victor(6);
+        wheel2 = new Victor(5);
         //arm = new Victor();
 
         cockOn = new Solenoid(4);
@@ -75,7 +76,89 @@ public class SystemShooter extends WiredCatsSystem {
     
     public void doAutonomous(WiredCatsEvent event) 
     {
-        
+        if (event instanceof CommandShoot)
+        {
+            autonomous_state = WiredCatsSystem.AUTONOMOUS_ATTEMPTING;
+            autoShoot = true;
+            
+            fireOn.set(false);
+            fireOff.set(true);
+            cockOn.set(true);
+            cockOff.set(false);
+            gateDown.set(true);
+            gateUp.set(false);
+                
+            loopTimer.stop();
+            loopTimer.reset();
+            cockTimer.stop();
+            cockTimer.reset();
+                
+            fireTimer.start();
+        }
+        if(event instanceof EventOverDesiredSpeed) {
+                if(((EventOverDesiredSpeed) event).encoderID == EventOverDesiredSpeed.ENCODER_1) {
+                    wheel1.set(0.0);
+                    System.out.println("bang off");
+                } else wheel2.set(0.0);
+            }
+            else if(event instanceof EventUnderDesiredSpeed) {
+                if(((EventUnderDesiredSpeed) event).encoderID == EventUnderDesiredSpeed.ENCODER_1) {
+                        wheel1.set(-1.0);
+                        System.out.println("bang on");
+                    } else wheel2.set(-1.0);
+                }  
+    }
+    
+    public void update()
+    {
+       if(autoShoot) doAutoShoot();
+       
+       if (autonomous_state == AUTONOMOUS_ATTEMPTING)
+       {
+           if (loopTimer.get() >= 0.5) {
+            fireOn.set(false);
+            fireOff.set(true);
+            cockOn.set(false);
+            cockOff.set(true);
+//                    gateUp.set(false);
+//                    gateDown.set(true);
+                    
+            loopTimer.stop();
+            loopTimer.reset();
+            autonomous_state = AUTONOMOUS_COMPLETED;
+            System.out.println("looped");
+            return;
+        }
+
+
+        if (cockTimer.get() >= 0.1) {
+            fireOff.set(false);
+            fireOn.set(true);
+            frisbeesHeld--;
+            System.out.println("[WiredCats] Frisbee Shot. Currently Holding " + frisbeesHeld + " frisbees.");
+
+            cockTimer.stop();
+            cockTimer.reset();
+            loopTimer.start();
+            System.out.println("--fired");
+            return;
+        }
+
+        if (fireTimer.get() >= 0.3) {
+//          gateUp.set(false);
+//          gateDown.set(true);
+            fireOn.set(true);
+            fireOff.set(false);
+//          cockOn.set(true);
+//          cockOff.set(false);
+
+            fireTimer.stop();
+            fireTimer.reset();
+            cockTimer.start();
+            System.out.println("-cocked");
+            return;
+        }
+       }
     }
     
     private void gamepadEventListener(EventGamePad eventgp) {
@@ -99,9 +182,10 @@ public class SystemShooter extends WiredCatsSystem {
         } else if (eventgp instanceof EventRightBumperReleased && eventgp.isController1()) {
             autoShoot = false;
         }
+        
     }
     
-    public void doAutoShoot() {
+    private void doAutoShoot() {
         if (loopTimer.get() >= 0.5) {
             fireOn.set(false);
             fireOff.set(true);
@@ -121,6 +205,8 @@ public class SystemShooter extends WiredCatsSystem {
         if (cockTimer.get() >= 0.1) {
             fireOff.set(false);
             fireOn.set(true);
+            frisbeesHeld--;
+            System.out.println("[WiredCats] Frisbee Shot. Currently Holding " + frisbeesHeld + " frisbees.");
 
             cockTimer.stop();
             cockTimer.reset();
@@ -146,7 +232,7 @@ public class SystemShooter extends WiredCatsSystem {
     }
     
     public void doTeleop(WiredCatsEvent event) {
-        if(autoShoot) doAutoShoot();
+
         
         if(event instanceof EventGamePad) gamepadEventListener((EventGamePad) event);
         else {
@@ -186,5 +272,20 @@ public class SystemShooter extends WiredCatsSystem {
     {
         gateUp.set(b);
         gateDown.set(!b);
+    }
+    
+    public int getFrisbeesHeld()
+    {
+        return frisbeesHeld;
+    }
+
+    public byte autonomous_AtDesiredNode() 
+    {
+        if (autonomous_state == AUTONOMOUS_COMPLETED)
+        {
+            autonomous_state = AUTONOMOUS_WAITING;
+            return AUTONOMOUS_COMPLETED;
+        }
+        return autonomous_state;
     }
 }

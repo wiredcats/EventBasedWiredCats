@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.templates.WiredCats2415;
 /**
  * Fires events based on encoders used in the shooter.
  *
- * @author Robotics
+ * @author Bruce Crane
  */
 
 public class ControllerShooter extends WiredCatsController {
