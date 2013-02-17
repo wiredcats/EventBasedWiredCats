@@ -8,6 +8,8 @@ import WiredCatsEvents.AutonomousCommands.CommandNewDesiredPosition;
 import WiredCatsEvents.GamePadEvents.*;
 import WiredCatsEvents.WiredCatsEvent;
 import WiredCatsEvents.EventGamePad;
+import WiredCatsEvents.SensorEvents.EventLeftDriveEncoderChanged;
+import WiredCatsEvents.SensorEvents.EventRightDriveEncoderChanged;
 
 import com.sun.squawk.util.MathUtils;
 import edu.wpi.first.wpilibj.Talon;
@@ -35,6 +37,9 @@ public class SystemDrive extends WiredCatsSystem
     private double actualLeftDrivePosition;
     private double actualRightDrivePosition;
     
+    private double leftPower;
+    private double rightPower;
+    
     private double kp;
     private double ki;
     private double kd;
@@ -47,20 +52,20 @@ public class SystemDrive extends WiredCatsSystem
     public SystemDrive() {
         super();
 
-        left = new Talon(1);
-        right = new Talon(2);        
+        left = new Talon(2);
+        right = new Talon(1);        
         leftDriveDesiredPosition = 0;
         rightDriveDesiredPosition = 0;
 
         driveDeadband = WiredCats2415.textReader.getValue("driveDeadband");
         driveGain = WiredCats2415.textReader.getValue("driveGain");
         
-        kp = WiredCats2415.textReader.getValue("propConstantDrive");
-        SmartDashboard.putNumber("propConstantDrive", kp);
-        ki = WiredCats2415.textReader.getValue("integralConstantDrive");
-        SmartDashboard.putNumber("integralConstantDrive", ki);
-        kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
-        SmartDashboard.putNumber("derivativeConstatnDrive", kd);
+//        kp = WiredCats2415.textReader.getValue("propConstantDrive");
+//        SmartDashboard.putNumber("propConstantDrive", kp);
+//        ki = WiredCats2415.textReader.getValue("integralConstantDrive");
+//        SmartDashboard.putNumber("integralConstantDrive", ki);
+//        kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
+//        SmartDashboard.putNumber("derivativeConstatnDrive", kd);
         
         
         System.out.println("[WiredCats] Initialized System Drive");
@@ -82,43 +87,70 @@ public class SystemDrive extends WiredCatsSystem
             leftDriveDesiredPosition = ((CommandNewDesiredPosition)event).leftEncoder;
             rightDriveDesiredPosition = ((CommandNewDesiredPosition)event).rightEncoder;    
         }
-    }
-    
-    public void update()
-    {
-        //left side.
-        double error = leftDriveDesiredPosition - actualLeftDrivePosition;
+        else if (event instanceof EventLeftDriveEncoderChanged)
+        {
+            double error = leftDriveDesiredPosition - actualLeftDrivePosition;
             
             leftIntegral += error;
             
             double derivative = lastLeftError - error;
             lastLeftError = error;
             
-            kp = SmartDashboard.getNumber("propConstantDrive");
-            ki = SmartDashboard.getNumber("integralConstantDrive");
-            kd = SmartDashboard.getNumber("derivativeConstantDrive");
+//            kp = SmartDashboard.getNumber("propConstantDrive");
+//            ki = SmartDashboard.getNumber("integralConstantDrive");
+//            kd = SmartDashboard.getNumber("derivativeConstantDrive");
             
-            double leftPower = kp*error + ki*leftIntegral + kd*derivative;
+            leftPower = kp*error + ki*leftIntegral + kd*derivative;
             
             
             if (error != 0)
             {
                 left.set(leftPower);
             }
-        //right side.
-        error = rightDriveDesiredPosition - actualRightDrivePosition;
+            
+            if (leftPower == 0 && rightPower == 0)
+            {
+                if (autonomous_state == AUTONOMOUS_ATTEMPTING)
+                {
+                    autonomous_state = AUTONOMOUS_COMPLETED;
+                }
+            }
+            
+        }
+        else if (event instanceof EventRightDriveEncoderChanged)
+        {
+            double error = rightDriveDesiredPosition - actualRightDrivePosition;
         
             rightIntegral += error;
             
-            derivative = lastRightError - error;
+            double derivative = lastRightError - error;
             lastRightError = error;
             
-            double rightPower = kp*error + ki*rightIntegral + kd*derivative;
+//            kp = SmartDashboard.getNumber("propConstantDrive");
+//            ki = SmartDashboard.getNumber("integralConstantDrive");
+//            kd = SmartDashboard.getNumber("derivativeConstantDrive");
             
-            if (leftPower == 0 &&
-                rightPower == 0 &&
-                autonomous_state == AUTONOMOUS_ATTEMPTING) autonomous_state = AUTONOMOUS_COMPLETED;
-
+            rightPower = kp*error + ki*rightIntegral + kd*derivative;
+            
+            if (error != 0)
+            {
+                left.set(rightPower);
+            }
+            
+            if (leftPower == 0 && rightPower == 0)
+            {
+                if (autonomous_state == AUTONOMOUS_ATTEMPTING)
+                {
+                    autonomous_state = AUTONOMOUS_COMPLETED;
+                }
+            }
+            
+        }
+    }
+    
+    public void update()
+    {
+            
     }
     
     public byte autonomous_AtDesiredNode()
@@ -136,11 +168,11 @@ public class SystemDrive extends WiredCatsSystem
         if (event instanceof EventLeftYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
                 left.set(setVictorValues(((EventLeftYAxisMoved) event).y));
-                System.out.println(setVictorValues(((EventLeftYAxisMoved) event).y));
+//                System.out.println(setVictorValues(((EventLeftYAxisMoved) event).y));
             }
         } else if (event instanceof EventRightYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
-                right.set(setVictorValues(((EventRightYAxisMoved) event).y));
+                right.set(-1*setVictorValues(((EventRightYAxisMoved) event).y));
             }
         }
     }
@@ -157,13 +189,18 @@ public class SystemDrive extends WiredCatsSystem
         double a = driveGain;
         double b = driveDeadband;
         
+        
         if (value >= 0)
         {
-            return b + (1-b)*(a*MathUtils.pow(value, 3) + (1-a)*value);
+            if (value < b) return 0;
+            
+            return b + (1-b)*(a*MathUtils.pow(value, 1) + (1-a)*value);
         }
         else
         {
-            return -1*b + (1-b)*(a*MathUtils.pow(value, 3) + (1-a)*value);
+            if (value > -1*b) return 0;
+            
+            return -1*b + (1-b)*(a*MathUtils.pow(value, 1) + (1-a)*value);
         }
     }
 

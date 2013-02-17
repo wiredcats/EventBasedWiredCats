@@ -64,9 +64,10 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     public abstract void doDisabled(WiredCatsEvent event);
     public abstract void doAutonomous(WiredCatsEvent command);
     public abstract void doTeleop(WiredCatsEvent event);
-    public abstract void update();
     public abstract byte autonomous_AtDesiredNode();
 
+    public void update() {}
+    
     /**
      * An abstract method that is called by any RobotController that this system
      * is subscribed to. 

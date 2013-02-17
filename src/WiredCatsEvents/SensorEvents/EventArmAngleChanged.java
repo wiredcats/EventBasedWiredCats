@@ -14,11 +14,13 @@ public class EventArmAngleChanged extends WiredCatsEvent
 {
     
     private double angle;
+    public double time;
     
-    public EventArmAngleChanged(Object source, double angle)
+    public EventArmAngleChanged(Object source, double angle, double time)
     {
         super(source);
         this.angle = angle;
+        this.time = time;
     }
     
     public double getAngle()

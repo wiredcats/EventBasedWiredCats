@@ -42,7 +42,7 @@ public class ControllerAutonomous extends WiredCatsController
     boolean shooterReady;
     boolean intakeReady;
     
-    public ControllerAutonomous(int limit, String strategyFileName)
+    public ControllerAutonomous(int limit)
     {
         super(limit);
         atDesiredNode = true;
@@ -62,9 +62,14 @@ public class ControllerAutonomous extends WiredCatsController
         enabled = true;
     }
     
-    public void end()
+    public void stop()
     {
         enabled = false;
+    }
+    
+    public void reset(String s)
+    {
+        nodes = lr.readLog(s);
     }
 
     public void run() 

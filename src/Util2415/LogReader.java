@@ -34,13 +34,26 @@ public class LogReader
         
         try
         {
-            fc = (FileConnection)Connector.open("file:///WiredCatsLogs/" + fileName + ".txt", Connector.READ);
+            fc = (FileConnection)Connector.open("file:///PlayBook/" + fileName + ".txt", Connector.READ);
             fc.create();
             theFile = fc.openDataInputStream();
             
             while (hasMore)
             {
-                nodes.addElement(new Node(readToken(), readToken(), readToken(), readToken(), readToken()));
+                String first = readToken();
+                if (first == null)
+                {
+                    hasMore = false;
+                    break;
+                }
+                
+                nodes.addElement(new Node(
+                        Double.parseDouble(first),
+                        Double.parseDouble(readToken()),
+                        Double.parseDouble(readToken()),
+                        Double.parseDouble(readToken()),
+                        Double.parseDouble(readToken()),
+                        Double.parseDouble(readToken())));
             }
         }
         catch (IOException ioe)
@@ -51,7 +64,7 @@ public class LogReader
         return nodes;
     }
     
-    private double readToken() throws IOException
+    private String readToken() throws IOException
     {
         String s = "";
         int c = theFile.read();
@@ -62,7 +75,7 @@ public class LogReader
             if (c == -1) hasMore = true;
         }
         
-        return Double.parseDouble(s);
+        return s;
     }
     
 }

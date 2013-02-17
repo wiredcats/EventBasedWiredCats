@@ -5,7 +5,7 @@
 package Util2415;
 
 import WiredCatsControllers.ControllerDrive;
-import WiredCatsControllers.ControllerIntake;
+import WiredCatsControllers.ControllerArm;
 import WiredCatsControllers.ControllerShooter;
 import WiredCatsEvents.EventGamePad;
 import WiredCatsEvents.EventStateChange;
@@ -39,7 +39,7 @@ public class WiredCatsLogger implements Runnable
     DataOutputStream theFile;
     FileConnection fc;
     
-    private ControllerIntake ci;
+    private ControllerArm ci;
     private ControllerShooter cs;
     private ControllerDrive cd;
     
@@ -66,7 +66,7 @@ public class WiredCatsLogger implements Runnable
         System.out.println("[WiredCats] Logging System Initialized.");
     }
     
-    public void addControllers(ControllerIntake ci, ControllerShooter cs, ControllerDrive cd)
+    public void addControllers(ControllerArm ci, ControllerShooter cs, ControllerDrive cd)
     {
         this.ci = ci;
         this.cs = cs;
@@ -120,9 +120,10 @@ public class WiredCatsLogger implements Runnable
         String eventWriteUp = "";
         eventWriteUp += cd.getLeftTicks() + " ";
         eventWriteUp += cd.getRightTicks() + " ";
-        eventWriteUp += ss.getFrisbeesHeld() + " ";
-        eventWriteUp += si.getArmAngle() + " ";
-        eventWriteUp += si.isIntakeOn() + '\n';
+        eventWriteUp += cd.lastGyroValue + " ";
+//        eventWriteUp += ss.getFrisbeesHeld() + " ";
+//        eventWriteUp += si.getArmAngle() + " ";
+//        eventWriteUp += si.isIntakeOn() + '\n';
         
         writeString(eventWriteUp);
     }
