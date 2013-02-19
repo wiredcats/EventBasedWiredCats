@@ -9,6 +9,7 @@ import WiredCatsEvents.SensorEvents.EventLeftDriveEncoderChanged;
 import WiredCatsEvents.SensorEvents.EventRightDriveEncoderChanged;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -32,6 +33,8 @@ public class ControllerDrive extends WiredCatsController
     
     private double gyroValue;
     
+    private Timer timer;
+    
     public ControllerDrive(int limit)
     {
         super(limit);
@@ -43,6 +46,9 @@ public class ControllerDrive extends WiredCatsController
         rightEncoderDistance = 0;
         lastLeftEncoderDistance = 0;
         lastRightEncoderDistance = 0;
+        
+        timer = new Timer();
+        timer.start();
         
         lastGyroValue = 0;
         System.out.println("[WiredCats] Drive Controller Initialized.");
@@ -74,7 +80,13 @@ public class ControllerDrive extends WiredCatsController
     {
         while (true)
         {
-            leftEncoderDistance = leftEncoder.get();
+            if (timer.get() > 0.01)
+            {
+                timer.stop();
+                timer.reset();
+                timer.start();
+                
+                leftEncoderDistance = leftEncoder.get();
             rightEncoderDistance = rightEncoder.get();
             gyroValue = gyro.getAngle();
             
@@ -95,6 +107,13 @@ public class ControllerDrive extends WiredCatsController
                 fireEvent( new EventGyroAngleChanged(this, gyroValue));
             }   
             SmartDashboard.putNumber("gyro", gyroValue);
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            
         }
     } 
 }

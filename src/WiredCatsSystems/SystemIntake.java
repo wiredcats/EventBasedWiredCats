@@ -95,7 +95,7 @@ public class SystemIntake extends WiredCatsSystem
 //        System.out.println("I AM HERE>");
         if (event instanceof EventButtonAPressed && !event.isController1())
         {
-            intakeMotor.set(-1*0.75);
+            intakeMotor.set(-1*0.5);
 //            System.out.println("intake motor set up.");
         }
         else if (event instanceof EventButtonAReleased && !event.isController1())
@@ -104,7 +104,7 @@ public class SystemIntake extends WiredCatsSystem
         }
         else if (event instanceof EventButtonBPressed && !event.isController1())
         {
-            intakeMotor.set(0.75);
+            intakeMotor.set(0.5);
         }
         else if (event instanceof EventButtonBReleased && !event.isController1())
         {

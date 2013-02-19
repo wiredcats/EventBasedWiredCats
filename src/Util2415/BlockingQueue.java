@@ -38,6 +38,11 @@ public class BlockingQueue {
 
         return temp;
     }
+    
+    public int getSize()
+    {
+        return queue.size();
+    }
 
     public boolean isEmpty() {
         return queue.isEmpty();

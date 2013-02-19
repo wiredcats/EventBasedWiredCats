@@ -40,7 +40,7 @@ public class ControllerArm extends WiredCatsController
         stuffTimer = new Timer();
         timer.start();
         
-        System.out.println("[WiredCats] Intake Controller initialized.");
+        System.out.println("[WiredCats] Arm Controller initialized.");
     }
     
     public void run() 
@@ -48,12 +48,12 @@ public class ControllerArm extends WiredCatsController
         //fireEvent(new EventArmAngleChanged(this, armAngle));
         while (true)
         {
-            System.out.println("Pot reading: " + arm.getValue());
-            if (stuffTimer.get() > .01)
-            {
-                SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
-                System.out.println(arm.getValue());
-            SmartDashboard.putNumber("POT reading (getVoltage): ", arm.getVoltage());
+            //System.out.println("Pot reading: " + arm.getValue());
+                
+            //SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
+            //System.out.println("Arm Value: " + arm.getValue());
+                //System.out.println(arm.getValue());
+            //SmartDashboard.putNumber("POT reading (getVoltage): ", arm.getVoltage());
             //get pot of absolutely up.
             //get pot of absolutely down.
             //154
@@ -68,11 +68,11 @@ public class ControllerArm extends WiredCatsController
                 stuffTimer.stop();
                 stuffTimer.reset();
                 stuffTimer.start();
-                
-            
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
             }
-            
-            
         }
     }
 //    private get ArmAngle(double encoderValue) {}

@@ -49,6 +49,8 @@ public class ControllerShooter extends WiredCatsController {
         is2InRange = false;
         desiredEncoder1Speed = WiredCats2415.textReader.getValue("desiredEncoder1Speed");
         desiredEncoder2Speed = WiredCats2415.textReader.getValue("desiredEncoder2Speed");
+        SmartDashboard.putNumber("desiredEncoder1Speed", desiredEncoder1Speed);
+        SmartDashboard.putNumber("desiredEncoder2Speed", desiredEncoder2Speed);
         desiredRange = WiredCats2415.textReader.getValue("shooterWheelRange");
         
         System.out.println("[WiredCats] Shooter Controller initialized.");
@@ -65,19 +67,21 @@ public class ControllerShooter extends WiredCatsController {
 //        SmartDashboard.putNumber("desiredEncoderWheel2Speed", desiredEncoder2Speed);
 
         while (true) {
-            encoder1Rate = encoder1.getRate() / 2; //convertig fromt ticks per second, to revolutions per minute.
-            encoder2Rate = encoder2.getRate() / 2;
             
-            //SmartDashboard.putNumber("Wheel 1 Speed", encoder1Rate);
-            //SmartDashboard.putNumber("Wheel 2 Speed", encoder2Rate);
-            //desiredEncoder1Speed = SmartDashboard.getNumber("desiredEncoderWheel1Speed");
-            //desiredEncoder2Speed = SmartDashboard.getNumber("desiredEncoderWheel2Speed");
+            
+
             
 //            System.out.println(encoder1Rate);
 //            System.out.println(desiredEncoder1Speed);
 //            System.out.println(is1Over);
-            if (timer.get() > .01)
-            {
+                SmartDashboard.putNumber("Wheel 1 Speed", encoder1Rate);
+                SmartDashboard.putNumber("Wheel 2 Speed", encoder2Rate);
+                desiredEncoder1Speed = SmartDashboard.getNumber("desiredEncoder1Speed");
+                desiredEncoder2Speed = SmartDashboard.getNumber("desiredEncoder2Speed");
+                
+                encoder1Rate = encoder1.getRate() / 2; //convertig fromt ticks per second, to revolutions per minute.
+                encoder2Rate = encoder2.getRate() / 2;
+                
                 timer.stop();
                 timer.reset();
                 timer.start();
@@ -108,9 +112,12 @@ public class ControllerShooter extends WiredCatsController {
                 fireEvent(new EventUnderDesiredSpeed(this, EventUnderDesiredSpeed.ENCODER_2));
               
             }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
             }
-            //Bang-Bang control system************************
-            
         }
+            //Bang-Bang control system************************
     }
 }

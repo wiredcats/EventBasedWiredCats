@@ -3,6 +3,7 @@ package WiredCatsControllers;
 import WiredCatsEvents.GamePadEvents.EventButtonAPressed;
 import WiredCatsEvents.GamePadEvents.*;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.templates.WiredCats2415;
 
 /**
@@ -20,6 +21,8 @@ public class ControllerGamePad extends WiredCatsController implements Runnable {
     //Holds new values of buttons / controllers in order to compare them with old
     GamePad newPrimaryGP;
     GamePad newSecondaryGP;
+    
+    Timer timer;
 
     public ControllerGamePad(int limit) 
     {
@@ -30,14 +33,22 @@ public class ControllerGamePad extends WiredCatsController implements Runnable {
         
         oldSecondaryGP = new GamePad(new Joystick(2));
         newSecondaryGP = new GamePad(new Joystick(2));
+        
+        timer = new Timer();
+        timer.start();
 
         System.out.println("[WiredCats] GamePad Controller intialized");
     }
 
     public void run() {
         while (true) {
-            checkController(oldPrimaryGP, newPrimaryGP, (byte) 1);
-            checkController(oldSecondaryGP, newSecondaryGP, (byte) 2);
+                checkController(oldPrimaryGP, newPrimaryGP, (byte) 1);
+                checkController(oldSecondaryGP, newSecondaryGP, (byte) 2);
+            try {                
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

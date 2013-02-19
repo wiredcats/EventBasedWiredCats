@@ -60,12 +60,15 @@ public class SystemDrive extends WiredCatsSystem
         driveDeadband = WiredCats2415.textReader.getValue("driveDeadband");
         driveGain = WiredCats2415.textReader.getValue("driveGain");
         
-//        kp = WiredCats2415.textReader.getValue("propConstantDrive");
-//        SmartDashboard.putNumber("propConstantDrive", kp);
-//        ki = WiredCats2415.textReader.getValue("integralConstantDrive");
-//        SmartDashboard.putNumber("integralConstantDrive", ki);
-//        kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
-//        SmartDashboard.putNumber("derivativeConstatnDrive", kd);
+        SmartDashboard.putNumber("driveDeadband", driveDeadband);
+        SmartDashboard.putNumber("driveGain", driveGain);
+        
+        kp = WiredCats2415.textReader.getValue("propConstantDrive");
+        SmartDashboard.putNumber("propConstantDrive", kp);
+        ki = WiredCats2415.textReader.getValue("integralConstantDrive");
+        SmartDashboard.putNumber("integralConstantDrive", ki);
+        kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
+        SmartDashboard.putNumber("derivativeConstantDrive", kd);
         
         
         System.out.println("[WiredCats] Initialized System Drive");
@@ -74,6 +77,12 @@ public class SystemDrive extends WiredCatsSystem
     
     public void doDisabled(WiredCatsEvent event) 
     {
+        kp = SmartDashboard.getNumber("propConstantDrive");
+        ki = SmartDashboard.getNumber("integralConstantDrive");
+        kd = SmartDashboard.getNumber("derivativeConstantDrive");
+        driveDeadband = SmartDashboard.getNumber("driveDeadband");
+        driveGain = SmartDashboard.getNumber("driveGain");
+        
         left.set(0.0);
         right.set(0.0);
         leftIntegral = 0.0;
@@ -148,11 +157,6 @@ public class SystemDrive extends WiredCatsSystem
         }
     }
     
-    public void update()
-    {
-            
-    }
-    
     public byte autonomous_AtDesiredNode()
     {
         if (autonomous_state == AUTONOMOUS_COMPLETED)
@@ -165,14 +169,19 @@ public class SystemDrive extends WiredCatsSystem
     
     public void doTeleop(WiredCatsEvent event) 
     {
+        //System.out.println(events.getSize());
+        
         if (event instanceof EventLeftYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
                 left.set(setVictorValues(((EventLeftYAxisMoved) event).y));
+                //System.out.println(((EventLeftYAxisMoved) event).y);
+//                left.set(((EventLeftYAxisMoved) event).y);
 //                System.out.println(setVictorValues(((EventLeftYAxisMoved) event).y));
             }
         } else if (event instanceof EventRightYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
-                right.set(-1*setVictorValues(((EventRightYAxisMoved) event).y));
+                right.set(-1*setVictorValues(((EventRightYAxisMoved)event).y));
+//                right.set(((EventRightYAxisMoved) event).y);
             }
         }
     }

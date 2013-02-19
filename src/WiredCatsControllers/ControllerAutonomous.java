@@ -15,6 +15,7 @@ import WiredCatsSystems.SystemDrive;
 import WiredCatsSystems.SystemIntake;
 import WiredCatsSystems.SystemShooter;
 import WiredCatsSystems.WiredCatsSystem;
+import edu.wpi.first.wpilibj.Timer;
 import java.util.Vector;
 
 /**
@@ -42,6 +43,8 @@ public class ControllerAutonomous extends WiredCatsController
     boolean shooterReady;
     boolean intakeReady;
     
+    Timer timer;
+    
     public ControllerAutonomous(int limit)
     {
         super(limit);
@@ -50,6 +53,9 @@ public class ControllerAutonomous extends WiredCatsController
         driveReady = false;
         shooterReady = false;
         intakeReady = false;
+        
+        timer = new Timer();
+        timer.start();
     }
     
     public void readLog(String s)
@@ -76,8 +82,12 @@ public class ControllerAutonomous extends WiredCatsController
     {
         while (true)
         {
-            if (enabled)
+            if (enabled && timer.get() > 0.01)
             {
+                timer.stop();
+                timer.reset();
+                timer.start();
+                
                 if (!isEmpty() && atDesiredNode)
                 {
                     desiredState = take();

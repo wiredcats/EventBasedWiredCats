@@ -51,13 +51,14 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
                     if(state == STATE_DISABLED) doDisabled(event);
                     else if(state == STATE_AUTONOMOUS) doAutonomous(event);
                     else if(state == STATE_TELEOP) doTeleop(event);
-
+                    
                 }
                 update();
+                Thread.sleep(10);
+                
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-
         }
     }
     
