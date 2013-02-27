@@ -16,11 +16,11 @@ public class EventUnderDesiredSpeed extends WiredCatsEvent
     public static final byte ENCODER_1 = 1;
     public static final byte ENCODER_2 = 2;
     
-    public byte encoderID;
+    public boolean isFirstWheel;
     
-    public EventUnderDesiredSpeed(Object source, byte encoderID)
+    public EventUnderDesiredSpeed(Object source, boolean isFirstWheel)
     {
         super(source);
-        this.encoderID = encoderID;
+        this.isFirstWheel = isFirstWheel;
     }
 }

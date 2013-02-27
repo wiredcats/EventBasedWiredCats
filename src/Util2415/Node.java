@@ -13,17 +13,15 @@ public class Node
     
     public double leftTicks;
     public double rightTicks;
-    public double gyroAngle;
-    public double frisbeesHeld;
+    public double frisbeesShot;
     public double armAngle;
     public boolean isIntakeOn;
     
-    public Node(double leftTicks, double rightTicks, double gyroAngle, double frisbeesHeld, double armAngle, double isIntakeOn)
+    public Node(double leftTicks, double rightTicks, double frisbeesShot, double armAngle, double isIntakeOn)
     {
         this.leftTicks = leftTicks;
         this.rightTicks = rightTicks;
-        this.gyroAngle = gyroAngle;
-        this.frisbeesHeld = frisbeesHeld;
+        this.frisbeesShot = frisbeesShot;
         this.armAngle = armAngle;
         if (isIntakeOn != 0.0) this.isIntakeOn = true;
         else this.isIntakeOn = false;

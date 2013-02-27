@@ -11,19 +11,19 @@ import WiredCatsEvents.AutonomousCommands.CommandNewArmAngle;
 import WiredCatsEvents.AutonomousCommands.CommandNewDesiredPosition;
 import WiredCatsEvents.AutonomousCommands.CommandShoot;
 import WiredCatsEvents.AutonomousCommands.CommandStopIntake;
+import WiredCatsEvents.WiredCatsEvent;
+import WiredCatsSystems.SystemArm;
 import WiredCatsSystems.SystemDrive;
 import WiredCatsSystems.SystemIntake;
 import WiredCatsSystems.SystemShooter;
 import WiredCatsSystems.WiredCatsSystem;
-import edu.wpi.first.wpilibj.Timer;
 import java.util.Vector;
 
 /**
  *
  * @author Bruce Crane
  */
-public class ControllerAutonomous extends WiredCatsController
-{
+public class ControllerAutonomous extends WiredCatsController {
     
     LogReader lr;
     Vector nodes;
@@ -31,130 +31,118 @@ public class ControllerAutonomous extends WiredCatsController
     Node desiredState;
     boolean atDesiredNode;
     
-    double frisbeesHeld;
+    double frisbeesShot;
     
     boolean enabled = false;
     
     SystemDrive sd;
     SystemShooter ss;
     SystemIntake si;
+    SystemArm sa;
     
     boolean driveReady;
     boolean shooterReady;
-    boolean intakeReady;
-    
-    Timer timer;
-    
-    public ControllerAutonomous(int limit)
-    {
+    boolean armReady;
+    public ControllerAutonomous(int limit){
         super(limit);
         atDesiredNode = true;
                 
         driveReady = false;
         shooterReady = false;
-        intakeReady = false;
-        
-        timer = new Timer();
-        timer.start();
+        armReady = false;
     }
     
-    public void readLog(String s)
-    {
+    public void readLog(String s){
         nodes = lr.readLog(s);
     }
     
-    public void begin()
-    {
+    public void begin(){
         enabled = true;
     }
     
-    public void stop()
-    {
+    public void stop(){
         enabled = false;
     }
     
-    public void reset(String s)
-    {
+    public void reset(String s){
         nodes = lr.readLog(s);
     }
 
-    public void run() 
-    {
-        while (true)
-        {
-            if (enabled && timer.get() > 0.01)
-            {
-                timer.stop();
-                timer.reset();
-                timer.start();
+    public void run() {
+        while (true) {
+            if (enabled) {
                 
-                if (!isEmpty() && atDesiredNode)
-                {
+                if (isEmpty()) break;
+                
+                if (atDesiredNode){
                     desiredState = take();
                     atDesiredNode = false;
                     setNewDesiredNode();
                     driveReady = false;
                     shooterReady = false;
-                    intakeReady = false;
+                    armReady = false;
                 }
                 
-                if (sd.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED)
-                {
+                if (sd.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     driveReady = true;
                 }
-                if (ss.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED)
-                {
+                if (ss.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     shooterReady = true;
                 }
-                if (si.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED)
-                {
-                    intakeReady = true;
-                }
-                
-                if (driveReady && shooterReady && intakeReady)
-                {
+                if (sa.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
+                    armReady = true;
+                }      
+                if (driveReady && shooterReady && armReady){
                     atDesiredNode = true;
                 }
-            } 
-        }
+                
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }     
     }
     
-    private boolean isEmpty()
-    {
+    private boolean isEmpty(){
         return nodes.isEmpty();
     }
     
-    private Node take()
-    {
+    private Node take(){
         Node temp = (Node)nodes.firstElement();
         nodes.removeElementAt(0);
         return temp;
     }
     
-    private void setNewDesiredNode()
-    {
-        double nFrisbees = desiredState.frisbeesHeld;
-        double nArmAngle = desiredState.armAngle;
-
-        if (desiredState.isIntakeOn)
-        {
-            fireEvent(new CommandIntake(this));
-        }
-        else
-        {
-            fireEvent(new CommandStopIntake(this));
-        }
+    public void addSystems(SystemDrive sd, SystemIntake si, SystemShooter ss, SystemArm sa){
+        this.sd = sd;
+        this.si = si;
+        this.ss = ss;
+        this.sa = sa;
+    }
+    
+    private void setNewDesiredNode(){
         
-        if (nFrisbees < frisbeesHeld)
-        {
-            fireEvent(new CommandShoot(this));
+        if (desiredState.isIntakeOn) {
+            sendCommand(new CommandIntake(this), si);
         }
-        frisbeesHeld = nFrisbees;
+        else {
+            sendCommand(new CommandStopIntake(this), si);
+        }
+        if (desiredState.frisbeesShot < frisbeesShot) {
+            sendCommand(new CommandShoot(this), ss);
+        }
+        frisbeesShot = desiredState.frisbeesShot;
         
-        //TODO get the gyro values.
-        fireEvent(new CommandNewDesiredPosition(this, desiredState.leftTicks, desiredState.rightTicks, 0));
-        fireEvent(new CommandNewArmAngle(this, desiredState.armAngle));
+        sendCommand(new CommandNewDesiredPosition(this, desiredState.leftTicks, desiredState.rightTicks, 0), sd);
+        sendCommand(new CommandNewArmAngle(this, desiredState.armAngle), sa);
         
+    }
+    
+    
+    private void sendCommand(WiredCatsEvent command, WiredCatsSystem wcs){
+        wcs.eventReceived(command);
     }
     
 }

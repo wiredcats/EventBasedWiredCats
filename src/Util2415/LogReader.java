@@ -52,7 +52,6 @@ public class LogReader
                         Double.parseDouble(readToken()),
                         Double.parseDouble(readToken()),
                         Double.parseDouble(readToken()),
-                        Double.parseDouble(readToken()),
                         Double.parseDouble(readToken())));
             }
         }

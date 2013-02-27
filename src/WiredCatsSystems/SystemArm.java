@@ -66,7 +66,6 @@ public class SystemArm extends WiredCatsSystem
         SmartDashboard.putNumber("Integral ConstantArm", ki);
         kd = WiredCats2415.textReader.getValue("derivativeConstantArm");
         SmartDashboard.putNumber("Derivative ConstantArm", kd);
-        desiredArmAngle = 49.0; //midrange on robot arm.
         SmartDashboard.putNumber("desiredAngle", desiredArmAngle);
         
         presetA = WiredCats2415.textReader.getValue("presetA");
@@ -75,7 +74,9 @@ public class SystemArm extends WiredCatsSystem
         presetY = WiredCats2415.textReader.getValue("presetY");
         leftBumperPreset = WiredCats2415.textReader.getValue("leftBumperPreset");
         leftTriggerPreset = WiredCats2415.textReader.getValue("leftTriggerPreset");
-        
+        SmartDashboard.putNumber("leftBumperPreset", leftBumperPreset);
+        SmartDashboard.putNumber("leftTriggerPreset", leftTriggerPreset);
+        desiredArmAngle = leftTriggerPreset;
         System.out.println("[WiredCats] Initialized System Arm.");
         
         incrementTimer = new Timer();
@@ -87,54 +88,67 @@ public class SystemArm extends WiredCatsSystem
        kp = SmartDashboard.getNumber("Proportional ConstantArm");
        ki = SmartDashboard.getNumber("Integral ConstantArm");
        kd = SmartDashboard.getNumber("Derivative ConstantArm");
+       leftBumperPreset = SmartDashboard.getNumber("leftBumperPreset");
+       leftTriggerPreset = SmartDashboard.getNumber("leftTriggerPreset");
     }
 
-    public void doAutonomous(WiredCatsEvent event) 
+    public void doEnabled(WiredCatsEvent event)
     {
-        if (event instanceof CommandNewArmAngle)
+        if (event instanceof EventArmAngleChanged)
         {
-            desiredArmAngle = ((CommandNewArmAngle)event).angle;
-        }
-        else if (event instanceof EventArmAngleChanged)
-        {
+            actualArmAngle = ((EventArmAngleChanged)event).getAngle()/10;
+            double deltaTime = ((EventArmAngleChanged)event).time - lastTime;
             double error = desiredArmAngle - actualArmAngle;
-            //double deltaTime = ((EventArmAngleChanged))
             
-            integral += error;
-            
-            double derivative = lastError - error;
+            if (deltaTime > 1)
+            {
+                integral = 0;
+            }
+            else 
+            {
+               integral += error * deltaTime; 
+            }
+            double derivative = (error - lastError)/deltaTime;
             lastError = error;
-            
-//            double kp = SmartDashboard.getNumber("Proportional ConstantArm");
-//            double ki = SmartDashboard.getNumber("Integral ConstantArm");
-//            double kd = SmartDashboard.getNumber("Derivative ConstantArm");
+            lastTime = ((EventArmAngleChanged)event).time;
             
             double power = kp*error + ki*integral + kd*derivative;
             
+            System.out.println(power);
+            
             if (power == 0 && autonomous_state == AUTONOMOUS_ATTEMPTING) autonomous_state = AUTONOMOUS_COMPLETED;
             
-            //System.out.println("Power: " + power);
-            
-            if (error != 0)
+            if (power > 1.0) 
+            {
+                arm.set(1.0);
+            } 
+            else if (power < -1.0)
+            {
+                arm.set(-1.0);
+            }
+            else
             {
                 arm.set(power);
             }
         }
     }
+    
+    public void doAutonomousSpecific(WiredCatsEvent event) {
+        if (event instanceof CommandNewArmAngle){
+            desiredArmAngleChanged(((CommandNewArmAngle)event).angle);
+        }
+    }
 
-    public void doTeleop(WiredCatsEvent event) 
+    public void doTeleopSpecific(WiredCatsEvent event) 
     {
         //System.out.println("Queue size of System Arm: " + events.getSize());
         if (event instanceof EventGamePad) handleGamePadEvents((EventGamePad)event);
-        else if (event instanceof EventArmAngleChanged)
-        {
-           PIDControl((EventArmAngleChanged)event);
-        }
     }
     
      private void handleGamePadEvents(EventGamePad event)
     {
         //System.out.println("I AM HERE>");
+        double newDesiredArmAngle = desiredArmAngle;
         
         if (event instanceof EventDPadXAxisMoved && !event.isController1())
         {
@@ -158,75 +172,30 @@ public class SystemArm extends WiredCatsSystem
         }
         else if (event instanceof EventLeftBumperPressed)
         {
-            desiredArmAngle = leftBumperPreset;
+            newDesiredArmAngle = leftBumperPreset;
             System.out.println("left bumper pressed");
+            desiredArmAngleChanged(newDesiredArmAngle);
         }
         else if (event instanceof EventLeftTriggerPressed)
         {
-            desiredArmAngle = leftTriggerPreset;
+            newDesiredArmAngle = leftTriggerPreset;
             System.out.println("left trigger pressed");
+            desiredArmAngleChanged(newDesiredArmAngle);
         }
     }
      
-    private void PIDControl(EventArmAngleChanged event)
-    {
-         //System.out.println("event received that arm changed");
-            actualArmAngle = event.getAngle()/10;
-//            System.out.println("New Actual Angle: " + actualArmAngle);
-            double deltaTime = event.time - lastTime;
-            double error = desiredArmAngle - actualArmAngle;
-            
-            if (deltaTime > 3)
-            {
-                integral = 0;
+     private void desiredArmAngleChanged(double newAngle)
+     {
+         if (desiredArmAngle > newAngle){
+                arm.set(-.2);
+            } else {
+                arm.set(.2);
             }
-            else 
-            {
-               integral += error * deltaTime; 
-            }
-//            System.out.println("error: " + error);
-              
-            double derivative = (error - lastError)/deltaTime;
-//            System.out.println("Derivative: " + derivative);
-            lastError = error;
-            lastTime = event.time;
-            
-//            double kp = SmartDashboard.getNumber("Proportional ConstantArm");
-//            double ki = SmartDashboard.getNumber("Integral ConstantArm");
-//            double kd = SmartDashboard.getNumber("Derivative ConstantArm");
-            
-//            System.out.println("Integral:" + integrals.sum());
-            
-            double power = kp*error + ki*integral + kd*derivative;
-            
-            if (power == 0 && autonomous_state == AUTONOMOUS_ATTEMPTING) autonomous_state = AUTONOMOUS_COMPLETED;
-            
-            //System.out.println("Arm Power: " + power);
-         
-            if (power > 1.0) 
-            {
-                arm.set(1.0);
-//                System.out.println("power over 1");
-            } 
-            else if (power < -1.0)
-            {
-                arm.set(-1.0);
-//                System.out.println("power under 1");
-            }
-            else
-            {
-                arm.set(power);
-            }
-    }
-         
+            desiredArmAngle = newAngle;
+     }
+     
     public double getArmAngle()
     {
         return actualArmAngle;
     }
-
-    public byte autonomous_AtDesiredNode() 
-    {
-        return -1;
-    }
-    
 }

@@ -50,7 +50,7 @@ public class ControllerArm extends WiredCatsController
         {
             //System.out.println("Pot reading: " + arm.getValue());
                 
-            //SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
+            SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
             //System.out.println("Arm Value: " + arm.getValue());
                 //System.out.println(arm.getValue());
             //SmartDashboard.putNumber("POT reading (getVoltage): ", arm.getVoltage());

@@ -18,8 +18,11 @@ public class EventOverDesiredSpeed extends WiredCatsEvent
     
     public byte encoderID;
     
-    public EventOverDesiredSpeed(Object object, byte encoderID)
+    public boolean isFirstWheel;
+    
+    public EventOverDesiredSpeed(Object object, boolean isFirstWheel)
     {
         super(object);
+        this.isFirstWheel = isFirstWheel;
     }
 }

@@ -10,6 +10,7 @@ import WiredCatsControllers.ControllerShooter;
 import WiredCatsEvents.EventGamePad;
 import WiredCatsEvents.EventStateChange;
 import WiredCatsEvents.WiredCatsEvent;
+import WiredCatsSystems.SystemArm;
 import WiredCatsSystems.SystemDrive;
 import WiredCatsSystems.SystemDrive;
 import WiredCatsSystems.SystemIntake;
@@ -46,6 +47,7 @@ public class WiredCatsLogger implements Runnable
     private SystemDrive sd;
     private SystemIntake si;
     private SystemShooter ss;
+    private SystemArm sa;
     
     private Timer logTimer;
     private Timer robotTimer;
@@ -73,11 +75,12 @@ public class WiredCatsLogger implements Runnable
         this.cd = cd;
     }
     
-    public void addSystems(SystemDrive sd, SystemIntake si, SystemShooter ss)
+    public void addSystems(SystemDrive sd, SystemIntake si, SystemShooter ss, SystemArm sa)
     {
         this.sd = sd;
         this.si = si;
         this.ss = ss;
+        this.sa = sa;
     }
     
     public void newLog()
@@ -120,10 +123,10 @@ public class WiredCatsLogger implements Runnable
         String eventWriteUp = "";
         eventWriteUp += cd.getLeftTicks() + " ";
         eventWriteUp += cd.getRightTicks() + " ";
-        eventWriteUp += cd.lastGyroValue + " ";
-//        eventWriteUp += ss.getFrisbeesHeld() + " ";
-//        eventWriteUp += si.getArmAngle() + " ";
-//        eventWriteUp += si.isIntakeOn() + '\n';
+        //eventWriteUp += cd.lastGyroValue + " ";
+        eventWriteUp += ss.getFrisbeesShot() + " ";
+        eventWriteUp += sa.getArmAngle() + " ";
+        eventWriteUp += si.isIntakeOn() + '\n';
         
         writeString(eventWriteUp);
     }

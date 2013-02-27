@@ -46,16 +46,19 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
 
                     if (event instanceof EventStateChange) {
                         eventStateChangeReceived((EventStateChange) event);
+                        }
+                    
+                        if(state == STATE_DISABLED) doDisabled(event);
+                        else
+                        {
+                           doEnabled(event);
+                           if(state == STATE_AUTONOMOUS) doAutonomousSpecific(event);
+                           else if(state == STATE_TELEOP) doTeleopSpecific(event);  
+                        }
+                                      
                     }
-                    
-                    if(state == STATE_DISABLED) doDisabled(event);
-                    else if(state == STATE_AUTONOMOUS) doAutonomous(event);
-                    else if(state == STATE_TELEOP) doTeleop(event);
-                    
-                }
                 update();
-                Thread.sleep(10);
-                
+                Thread.sleep(1);        
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -63,9 +66,19 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     }
     
     public abstract void doDisabled(WiredCatsEvent event);
-    public abstract void doAutonomous(WiredCatsEvent command);
-    public abstract void doTeleop(WiredCatsEvent event);
-    public abstract byte autonomous_AtDesiredNode();
+    public abstract void doAutonomousSpecific(WiredCatsEvent event);
+    public abstract void doTeleopSpecific(WiredCatsEvent event);
+    public abstract void doEnabled(WiredCatsEvent event);
+    
+    public final byte autonomous_AtDesiredNode()
+    {
+        if (autonomous_state == AUTONOMOUS_COMPLETED)
+        {
+            autonomous_state = AUTONOMOUS_WAITING;
+            return AUTONOMOUS_COMPLETED;
+        }
+        return autonomous_state;
+    }
 
     public void update() {}
     

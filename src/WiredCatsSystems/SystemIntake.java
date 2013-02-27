@@ -53,8 +53,13 @@ public class SystemIntake extends WiredCatsSystem
         intakeMotor.set(0.0);
         
     }
+    
+    public void doEnabled(WiredCatsEvent event)
+    {
+        
+    }
 
-    public void doAutonomous(WiredCatsEvent event) 
+    public void doAutonomousSpecific(WiredCatsEvent event) 
     {
         if (event instanceof CommandIntake)
         {
@@ -66,18 +71,8 @@ public class SystemIntake extends WiredCatsSystem
         }
         
     }
-    
-    public byte autonomous_AtDesiredNode()
-    {
-        if (autonomous_state == AUTONOMOUS_COMPLETED)
-        {
-            autonomous_state = AUTONOMOUS_WAITING;
-            return AUTONOMOUS_COMPLETED;
-        }
-        else return autonomous_state;
-    }
 
-    public void doTeleop(WiredCatsEvent event) 
+    public void doTeleopSpecific(WiredCatsEvent event) 
     {  
         
 //        propConstant = SmartDashboard.getNumber("propConstant");
@@ -92,11 +87,9 @@ public class SystemIntake extends WiredCatsSystem
     
     private void handleGamePadEvents(EventGamePad event)
     {
-//        System.out.println("I AM HERE>");
         if (event instanceof EventButtonAPressed && !event.isController1())
         {
-            intakeMotor.set(-1*0.5);
-//            System.out.println("intake motor set up.");
+            intakeMotor.set(-1*1.0);
         }
         else if (event instanceof EventButtonAReleased && !event.isController1())
         {
@@ -104,7 +97,7 @@ public class SystemIntake extends WiredCatsSystem
         }
         else if (event instanceof EventButtonBPressed && !event.isController1())
         {
-            intakeMotor.set(0.5);
+            intakeMotor.set(1.0);
         }
         else if (event instanceof EventButtonBReleased && !event.isController1())
         {

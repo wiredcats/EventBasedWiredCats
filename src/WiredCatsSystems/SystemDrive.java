@@ -89,7 +89,9 @@ public class SystemDrive extends WiredCatsSystem
         rightIntegral = 0.0;
     }
     
-    public void doAutonomous(WiredCatsEvent event) 
+    public void doEnabled(WiredCatsEvent event) {};
+    
+    public void doAutonomousSpecific(WiredCatsEvent event) 
     {
         if (event instanceof CommandNewDesiredPosition)
         {
@@ -157,31 +159,17 @@ public class SystemDrive extends WiredCatsSystem
         }
     }
     
-    public byte autonomous_AtDesiredNode()
-    {
-        if (autonomous_state == AUTONOMOUS_COMPLETED)
-        {
-            autonomous_state = AUTONOMOUS_WAITING;
-            return AUTONOMOUS_COMPLETED;
-        }
-        return autonomous_state;
-    }
-    
-    public void doTeleop(WiredCatsEvent event) 
+    public void doTeleopSpecific(WiredCatsEvent event) 
     {
         //System.out.println(events.getSize());
         
         if (event instanceof EventLeftYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
                 left.set(setVictorValues(((EventLeftYAxisMoved) event).y));
-                //System.out.println(((EventLeftYAxisMoved) event).y);
-//                left.set(((EventLeftYAxisMoved) event).y);
-//                System.out.println(setVictorValues(((EventLeftYAxisMoved) event).y));
             }
         } else if (event instanceof EventRightYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
                 right.set(-1*setVictorValues(((EventRightYAxisMoved)event).y));
-//                right.set(((EventRightYAxisMoved) event).y);
             }
         }
     }

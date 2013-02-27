@@ -26,7 +26,6 @@ public class SystemShooter extends WiredCatsSystem {
 
     private Victor wheel1;
     private Victor wheel2;
-    private Victor arm;
     
     private Solenoid cockOn;
     private Solenoid cockOff;
@@ -45,7 +44,7 @@ public class SystemShooter extends WiredCatsSystem {
     
     private boolean autoShoot;
     
-    private int frisbeesHeld;
+    private int frisbeesShot;
     
     private boolean isFirstUpToSpeed;
     private boolean isSecondUpToSpeed;
@@ -56,7 +55,6 @@ public class SystemShooter extends WiredCatsSystem {
         super();
         wheel1 = new Victor(5);
         wheel2 = new Victor(6);
-        //arm = new Victor();
 
         cockOn = new Solenoid(1);
         cockOff = new Solenoid(2);
@@ -67,7 +65,7 @@ public class SystemShooter extends WiredCatsSystem {
 
         autoShoot = false;
         
-        frisbeesHeld = 3;
+        frisbeesShot = 0;
         isFirstUpToSpeed = false;
         isSecondUpToSpeed = false;
         
@@ -75,7 +73,7 @@ public class SystemShooter extends WiredCatsSystem {
         SmartDashboard.putNumber("xTime", xTime);
         yTime = WiredCats2415.textReader.getValue("yTime");
         SmartDashboard.putNumber("yTime", yTime);
-        yTime = WiredCats2415.textReader.getValue("zTime");
+        zTime = WiredCats2415.textReader.getValue("zTime");
         SmartDashboard.putNumber("zTime", zTime);
         
         System.out.println("[WiredCats] Initialized System Shooter");
@@ -92,43 +90,14 @@ public class SystemShooter extends WiredCatsSystem {
         yTime = SmartDashboard.getNumber("yTime");
         zTime = SmartDashboard.getNumber("zTime");
         
-        //arm.set(0.0);
     }
     
-    public void doAutonomous(WiredCatsEvent event) 
+    public void doAutonomousSpecific(WiredCatsEvent event) 
     {
         if (event instanceof CommandShoot)
         {
             //autoshoot = true;
         }
-        if(event instanceof EventOverDesiredSpeed) {
-                if(((EventOverDesiredSpeed) event).encoderID == EventOverDesiredSpeed.ENCODER_1) {
-                    wheel1.set(0.0);
-//                    System.out.println("bang off");
-                } else wheel2.set(0.0);
-            }
-            else if(event instanceof EventUnderDesiredSpeed) {
-                if(((EventUnderDesiredSpeed) event).encoderID == EventUnderDesiredSpeed.ENCODER_1) {
-                        wheel1.set(-1.0);
-//                        System.out.println("bang on");
-                    } else wheel2.set(-1.0);
-                }  
-            else if (event instanceof EventRightBumperPressed)
-            {
-                isRightBumperDown = true;
-            }
-            else if (event instanceof EventRightBumperReleased)
-            {
-                isRightBumperDown = false;
-            }
-            else if (event instanceof EventFirstShooterWheelWithinRange)
-            {
-                isFirstUpToSpeed = true;
-            }
-            else if (event instanceof EventSecondShooterWheelWithinRange)
-            {
-                isSecondUpToSpeed = true;
-            }
     }
     
     private void gamepadEventListener(EventGamePad eventgp) {
@@ -158,7 +127,7 @@ public class SystemShooter extends WiredCatsSystem {
     
     private void doAutoShoot() 
     {
-            if (xTimer.get() > xTime )//&& isFirstUpToSpeed && isSecondUpToSpeed)
+            if (xTimer.get() > xTime )
             {
                 cock(false);
                 fire(true);
@@ -166,8 +135,7 @@ public class SystemShooter extends WiredCatsSystem {
                 xTimer.stop();
                 xTimer.reset();
                 yTimer.start();
-//                System.out.println("X");
-                
+                frisbeesShot++; 
                 isFirstUpToSpeed = false;
                 isSecondUpToSpeed = false;
             }
@@ -207,25 +175,33 @@ public class SystemShooter extends WiredCatsSystem {
         doAutoShoot();
     }
     
-    public void doTeleop(WiredCatsEvent event) 
-    {    
-       // System.out.println(events.getSize());
-        if(event instanceof EventGamePad) gamepadEventListener((EventGamePad) event);
-        else {
-            //System.out.println("GOT TO THIS PIONT " + event.toString());
+    public void doEnabled(WiredCatsEvent event)
+    {
             if(event instanceof EventOverDesiredSpeed) {
-                if(((EventOverDesiredSpeed) event).encoderID == EventOverDesiredSpeed.ENCODER_1) {
+                if(((EventOverDesiredSpeed) event).isFirstWheel) {
                     wheel1.set(0.0);
                     //System.out.println("bang off");
-                } else wheel2.set(0.0);
+                } else {
+                    wheel2.set(0.0);     
+//                    System.out.println("2bang off");
+                }
+                
             }
             else if(event instanceof EventUnderDesiredSpeed) {
-                if(((EventUnderDesiredSpeed) event).encoderID == EventUnderDesiredSpeed.ENCODER_1) {
+                if(((EventUnderDesiredSpeed) event).isFirstWheel) {
                         wheel1.set(-1.0);
-                        //System.out.println("bang on");
-                    } else wheel2.set(-1.0);
+//                        System.out.println("bang on");
+                    } else{
+                        wheel2.set(-1.0);
+//                        System.out.println("2bang on");
+                    }
                 }
-        }
+    }
+    
+    public void doTeleopSpecific(WiredCatsEvent event) 
+    {    
+        //System.out.println(events.getSize());
+        if(event instanceof EventGamePad) gamepadEventListener((EventGamePad) event);
     }
     private void cock(boolean b)
     {
@@ -245,18 +221,8 @@ public class SystemShooter extends WiredCatsSystem {
         gateDown.set(!b);
     }
     
-    public int getFrisbeesHeld()
+    public int getFrisbeesShot()
     {
-        return frisbeesHeld;
-    }
-
-    public byte autonomous_AtDesiredNode() 
-    {
-        if (autonomous_state == AUTONOMOUS_COMPLETED)
-        {
-            autonomous_state = AUTONOMOUS_WAITING;
-            return AUTONOMOUS_COMPLETED;
-        }
-        return autonomous_state;
+        return frisbeesShot;
     }
 }

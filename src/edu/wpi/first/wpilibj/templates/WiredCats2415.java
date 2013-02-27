@@ -76,7 +76,8 @@ public class WiredCats2415 extends SimpleRobot
         initIntake();
         initArm();
         
-        //logWriter.addSystems(systemDrive, systemIntake, systemShooter);
+        //logWriter.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
+        //controllerAutonomous.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
         
         for (int i = 0; i < threads.size(); i++) {
             ((Thread) (threads.elementAt(i))).start();
@@ -120,7 +121,7 @@ public class WiredCats2415 extends SimpleRobot
      */
     private void initControllers() {
         controllerGamePad = new ControllerGamePad(5);
-        controllerShooter = new ControllerShooter(5);
+        controllerShooter = new ControllerShooter(5, this);
         controllerArm = new ControllerArm(5);
         controllerDrive = new ControllerDrive(5);
         //controllerAutonomous = new ControllerAutonomous(5);
@@ -153,14 +154,12 @@ public class WiredCats2415 extends SimpleRobot
     }
 
     private void initShooter() {
-        //setting up systemShooter
         systemShooter = new SystemShooter();
         controllerShooter.addEventListener(systemShooter);
         initSystem(systemShooter);
     }
     
-    private void initIntake()
-    {
+    private void initIntake(){
         systemIntake = new SystemIntake();
         initSystem(systemIntake);
     }
@@ -180,8 +179,7 @@ public class WiredCats2415 extends SimpleRobot
     private synchronized void addEventListener(WiredCatsEventListener l) { listeners.addElement(l); }
     private synchronized void removeEventListener(WiredCatsEventListener l) { listeners.removeElement(l); }
 
-    private synchronized void fireEvent(WiredCatsEvent e) 
-    {
+    private synchronized void fireEvent(WiredCatsEvent e) {
         for (int i = 0; i < listeners.size(); i++) {
             ((WiredCatsEventListener) (listeners.elementAt(i))).eventReceived(e);
         }
