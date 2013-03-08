@@ -24,11 +24,11 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     protected byte state = -1;
     
     public static final byte AUTONOMOUS_WAITING = 0;
-    public static final byte AUTONOMOUS_ATTEMPTING = 0;
-    public static final byte AUTONOMOUS_COMPLETED = 0;
-    protected byte autonomous_state = -1;
+    public static final byte AUTONOMOUS_ATTEMPTING = 1;
+    public static final byte AUTONOMOUS_COMPLETED = 2;
+    public static final byte AUTONOMOUS_UNDEFINED = -1;
+    protected byte autonomous_state = AUTONOMOUS_UNDEFINED;
     
-
     public WiredCatsSystem() {
         events = new BlockingQueue(5);
     }

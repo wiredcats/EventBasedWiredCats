@@ -166,6 +166,7 @@ public class WiredCatsLogger implements Runnable
 
     public void run() 
     {
+        SmartDashboard.putString("Logger File Name Base", "CHANGEME");
         while (true) 
         {
             if (logTimer.get() > 0.1)
@@ -174,6 +175,11 @@ public class WiredCatsLogger implements Runnable
                 logTimer.reset();
                 log();
                 logTimer.start();
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
             }
         }
     }

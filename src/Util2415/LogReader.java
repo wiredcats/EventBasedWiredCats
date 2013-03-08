@@ -9,6 +9,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Vector;
 import javax.microedition.io.Connector;
+import javax.microedition.io.InputConnection;
+import java.io.InputStream;
 
 /**
  *
@@ -18,8 +20,8 @@ public class LogReader
 {
     
     private String deliminator = " ";
-    private DataInputStream theFile;
-    FileConnection fc;
+    private InputStream theFile;
+    private InputConnection connection;
     
     boolean hasMore;
     
@@ -34,9 +36,8 @@ public class LogReader
         
         try
         {
-            fc = (FileConnection)Connector.open("file:///PlayBook/" + fileName + ".txt", Connector.READ);
-            fc.create();
-            theFile = fc.openDataInputStream();
+             connection = (InputConnection) Connector.open("file:///" + fileName, Connector.READ);
+            theFile = connection.openDataInputStream();
             
             while (hasMore)
             {
@@ -50,10 +51,12 @@ public class LogReader
                 nodes.addElement(new Node(
                         Double.parseDouble(first),
                         Double.parseDouble(readToken()),
-                        Double.parseDouble(readToken()),
+                        Integer.parseInt(readToken()),
                         Double.parseDouble(readToken()),
                         Double.parseDouble(readToken())));
             }
+            
+            theFile.close();
         }
         catch (IOException ioe)
         {
@@ -67,13 +70,12 @@ public class LogReader
     {
         String s = "";
         int c = theFile.read();
-        while (c != -1 || c != (int)'\n' || c != (int)' ')
+        while (c != -1 && c != (int)'\n' && c != (int)' ')
         {
-            s += c;
+            s += (char)c;
             c = theFile.read();
-            if (c == -1) hasMore = true;
+            if (c == -1) hasMore = false;
         }
-        
         return s;
     }
     

@@ -4,9 +4,7 @@
  */
 package WiredCatsControllers;
 
-import WiredCatsEvents.SensorEvents.EventGyroAngleChanged;
-import WiredCatsEvents.SensorEvents.EventLeftDriveEncoderChanged;
-import WiredCatsEvents.SensorEvents.EventRightDriveEncoderChanged;
+import WiredCatsEvents.SensorEvents.EventPositionChanged;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.Timer;
@@ -39,8 +37,8 @@ public class ControllerDrive extends WiredCatsController
     {
         super(limit);
         //TODO
-        leftEncoder = new Encoder(9, 10);
-        rightEncoder = new Encoder(11, 12);
+        leftEncoder = new Encoder(7, 8);  // 7, 8
+        rightEncoder = new Encoder(5, 6);  //5, 6
         gyro = new Gyro(2);
         leftEncoderDistance = 0;
         rightEncoderDistance = 0;
@@ -78,38 +76,30 @@ public class ControllerDrive extends WiredCatsController
 
     public void run()
     {
+        leftEncoder.start();
+        rightEncoder.start();
         while (true)
         {
-            if (timer.get() > 0.01)
-            {
-                timer.stop();
-                timer.reset();
-                timer.start();
                 
-                leftEncoderDistance = leftEncoder.get();
+            leftEncoderDistance = leftEncoder.get();
             rightEncoderDistance = rightEncoder.get();
             gyroValue = gyro.getAngle();
             
+            SmartDashboard.putNumber("leftEncoderDistance", leftEncoderDistance);
+            SmartDashboard.putNumber("rightEncoderDistance", rightEncoderDistance);
             
-            if (leftEncoderDistance != lastLeftEncoderDistance)
+            if (leftEncoderDistance != lastLeftEncoderDistance ||
+                   rightEncoderDistance != lastRightEncoderDistance)
             {
                 lastLeftEncoderDistance = leftEncoderDistance;
-                fireEvent( new EventLeftDriveEncoderChanged(this, leftEncoderDistance));
-            }
-            if (rightEncoderDistance != lastRightEncoderDistance)
-            {
                 lastRightEncoderDistance = rightEncoderDistance;
-                fireEvent( new EventRightDriveEncoderChanged(this, rightEncoderDistance));
-            }
-            if (lastGyroValue - gyroValue > .5 || lastGyroValue - gyroValue < -.5)
-            {
                 lastGyroValue = gyroValue;
-                fireEvent( new EventGyroAngleChanged(this, gyroValue));
-            }   
-            SmartDashboard.putNumber("gyro", gyroValue);
+                fireEvent( new EventPositionChanged(this, leftEncoderDistance, rightEncoderDistance, timer.get()));
             }
+            
+            SmartDashboard.putNumber("gyro", gyroValue);
             try {
-                Thread.sleep(10);
+                Thread.sleep(15);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }

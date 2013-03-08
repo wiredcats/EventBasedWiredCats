@@ -27,8 +27,6 @@ public class ControllerArm extends WiredCatsController
     
     Timer timer;
     
-    Timer stuffTimer;
-    
     public ControllerArm(int limit)
     { 
         super(limit); 
@@ -36,8 +34,6 @@ public class ControllerArm extends WiredCatsController
         arm = new AnalogChannel(1);
         armAngle = arm.getValue();
         timer = new Timer();
-        timer.start();
-        stuffTimer = new Timer();
         timer.start();
         
         System.out.println("[WiredCats] Arm Controller initialized.");
@@ -59,17 +55,15 @@ public class ControllerArm extends WiredCatsController
             //154
             
             double currentArmAngle = arm.getValue();
-            if (armAngle - currentArmAngle > 3 || armAngle - currentArmAngle < -3)
+            if (armAngle != currentArmAngle)
             {
                 //System.out.println("arm angle changed. " + currentArmAngle);
                 armAngle = currentArmAngle;
                 fireEvent(new EventArmAngleChanged(this, armAngle, timer.get()));
             }
-                stuffTimer.stop();
-                stuffTimer.reset();
-                stuffTimer.start();
+
             try {
-                Thread.sleep(10);
+                Thread.sleep(15);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }

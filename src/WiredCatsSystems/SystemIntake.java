@@ -18,7 +18,11 @@ import WiredCatsEvents.GamePadEvents.EventButtonYPressed;
 import WiredCatsEvents.GamePadEvents.EventButtonYReleased;
 import WiredCatsEvents.GamePadEvents.EventDPadXAxisMoved;
 import WiredCatsEvents.GamePadEvents.EventLeftBumperPressed;
+import WiredCatsEvents.GamePadEvents.EventLeftTriggerPressed;
+import WiredCatsEvents.GamePadEvents.EventLeftTriggerReleased;
 import WiredCatsEvents.GamePadEvents.EventRightBumperPressed;
+import WiredCatsEvents.GamePadEvents.EventRightTriggerPressed;
+import WiredCatsEvents.GamePadEvents.EventRightTriggerReleased;
 import WiredCatsEvents.SensorEvents.EventArmAngleChanged;
 import WiredCatsEvents.WiredCatsEvent;
 import edu.wpi.first.wpilibj.Timer;
@@ -87,19 +91,27 @@ public class SystemIntake extends WiredCatsSystem
     
     private void handleGamePadEvents(EventGamePad event)
     {
-        if (event instanceof EventButtonAPressed && !event.isController1())
-        {
-            intakeMotor.set(-1*1.0);
-        }
-        else if (event instanceof EventButtonAReleased && !event.isController1())
-        {
-            intakeMotor.set(0.0);
-        }
-        else if (event instanceof EventButtonBPressed && !event.isController1())
+        if (event instanceof EventLeftTriggerPressed && event.isController1())
         {
             intakeMotor.set(1.0);
         }
-        else if (event instanceof EventButtonBReleased && !event.isController1())
+        else if (event instanceof EventLeftTriggerReleased && event.isController1())
+        {
+            intakeMotor.set(0.0);
+        }
+        else if (event instanceof EventRightTriggerPressed && event.isController1())
+        {
+            intakeMotor.set(1.0);
+        }
+        else if (event instanceof EventRightTriggerReleased && event.isController1())
+        {
+            intakeMotor.set(0.0);
+        }
+        else if (event instanceof EventButtonYPressed && event.isController1())
+        {
+            intakeMotor.set(-1.0);
+        }
+        else if (event instanceof EventButtonYReleased && event.isController1())
         {
             intakeMotor.set(0.0);
         }

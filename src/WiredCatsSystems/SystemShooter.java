@@ -46,15 +46,15 @@ public class SystemShooter extends WiredCatsSystem {
     
     private int frisbeesShot;
     
-    private boolean isFirstUpToSpeed;
-    private boolean isSecondUpToSpeed;
+    private boolean is1BangOn;
+    private boolean is2BangOn;
     
     private boolean isRightBumperDown;
 
     public SystemShooter() {
         super();
-        wheel1 = new Victor(5);
-        wheel2 = new Victor(6);
+        wheel1 = new Victor(6);
+        wheel2 = new Victor(5);
 
         cockOn = new Solenoid(1);
         cockOff = new Solenoid(2);
@@ -66,8 +66,8 @@ public class SystemShooter extends WiredCatsSystem {
         autoShoot = false;
         
         frisbeesShot = 0;
-        isFirstUpToSpeed = false;
-        isSecondUpToSpeed = false;
+        is1BangOn = true;
+        is2BangOn = true;
         
         xTime = WiredCats2415.textReader.getValue("xTime");
         SmartDashboard.putNumber("xTime", xTime);
@@ -106,7 +106,7 @@ public class SystemShooter extends WiredCatsSystem {
             autoShoot = true;
             if (!(xTimer.get()>0 || yTimer.get() >0 || zTimer.get() >0))
             {
-                cock(false);
+                cock(true);
                 fire(false);
                 gate(false);
                 xTimer.start();
@@ -127,7 +127,7 @@ public class SystemShooter extends WiredCatsSystem {
     
     private void doAutoShoot() 
     {
-            if (xTimer.get() > xTime )
+            if (xTimer.get() > xTime && !is1BangOn && !is2BangOn)
             {
                 cock(false);
                 fire(true);
@@ -136,8 +136,6 @@ public class SystemShooter extends WiredCatsSystem {
                 xTimer.reset();
                 yTimer.start();
                 frisbeesShot++; 
-                isFirstUpToSpeed = false;
-                isSecondUpToSpeed = false;
             }
             
             if (yTimer.get() > yTime)
@@ -151,7 +149,7 @@ public class SystemShooter extends WiredCatsSystem {
                 //System.out.println("Y");
             }
             
-            if (zTimer.get() > 0.25)
+            if (zTimer.get() > zTime)
             {
                 cock(false);
                 fire(false);
@@ -180,20 +178,24 @@ public class SystemShooter extends WiredCatsSystem {
             if(event instanceof EventOverDesiredSpeed) {
                 if(((EventOverDesiredSpeed) event).isFirstWheel) {
                     wheel1.set(0.0);
-                    //System.out.println("bang off");
+                    is1BangOn = false;
+//                    System.out.println("1 bang off");
                 } else {
                     wheel2.set(0.0);     
-//                    System.out.println("2bang off");
+//                    System.out.println("2 bang off");
+                    is2BangOn = false;
                 }
                 
             }
             else if(event instanceof EventUnderDesiredSpeed) {
                 if(((EventUnderDesiredSpeed) event).isFirstWheel) {
                         wheel1.set(-1.0);
-//                        System.out.println("bang on");
+//                        System.out.println("1 bang on");
+                        is1BangOn = true;
                     } else{
                         wheel2.set(-1.0);
-//                        System.out.println("2bang on");
+//                        System.out.println("2 bang on");
+                        is2BangOn = true;
                     }
                 }
     }

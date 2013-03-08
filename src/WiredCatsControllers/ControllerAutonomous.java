@@ -41,19 +41,25 @@ public class ControllerAutonomous extends WiredCatsController {
     SystemArm sa;
     
     boolean driveReady;
-    boolean shooterReady;
     boolean armReady;
-    public ControllerAutonomous(int limit){
+    boolean shooterReady;
+    
+    public ControllerAutonomous(int limit)
+    {
         super(limit);
-        atDesiredNode = true;
-                
+        atDesiredNode = true;         
         driveReady = false;
-        shooterReady = false;
         armReady = false;
+        shooterReady = false;
     }
     
     public void readLog(String s){
         nodes = lr.readLog(s);
+    }
+    
+    public void setNodes(Vector nodes)
+    {
+        this.nodes = nodes;
     }
     
     public void begin(){
@@ -79,26 +85,27 @@ public class ControllerAutonomous extends WiredCatsController {
                     atDesiredNode = false;
                     setNewDesiredNode();
                     driveReady = false;
-                    shooterReady = false;
-                    armReady = false;
                 }
                 
                 if (sd.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     driveReady = true;
                 }
-                if (ss.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
+                if (sa.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED)
+                {
+                    armReady = true;
+                }
+                if (ss.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED)
+                {
                     shooterReady = true;
                 }
-                if (sa.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
-                    armReady = true;
-                }      
-                if (driveReady && shooterReady && armReady){
+                
+                if (armReady){
                     atDesiredNode = true;
                 }
                 
             }
             try {
-                Thread.sleep(10);
+                Thread.sleep(15);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -122,21 +129,16 @@ public class ControllerAutonomous extends WiredCatsController {
         this.sa = sa;
     }
     
-    private void setNewDesiredNode(){
-        
-        if (desiredState.isIntakeOn) {
-            sendCommand(new CommandIntake(this), si);
-        }
-        else {
-            sendCommand(new CommandStopIntake(this), si);
-        }
-        if (desiredState.frisbeesShot < frisbeesShot) {
-            sendCommand(new CommandShoot(this), ss);
-        }
-        frisbeesShot = desiredState.frisbeesShot;
-        
-        sendCommand(new CommandNewDesiredPosition(this, desiredState.leftTicks, desiredState.rightTicks, 0), sd);
+    private void setNewDesiredNode()
+    {
+        //sendCommand(new CommandNewDesiredPosition(this, desiredState.leftTicks, desiredState.rightTicks, 0), sd);
         sendCommand(new CommandNewArmAngle(this, desiredState.armAngle), sa);
+//        if (frisbeesShot < desiredState.frisbeesShot)
+//        {
+//            sendCommand(new CommandShoot(this), ss);
+//        }
+        if (desiredState.isIntakeOn) sendCommand(new CommandIntake(this), si);
+        else sendCommand( new CommandStopIntake(this), si);
         
     }
     

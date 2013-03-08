@@ -22,7 +22,7 @@ public class Queue
         queue = new Vector();
     }
 
-    public synchronized void put(double d)
+    public void put(double d)
     {
         if (queue.size() == maxLength)
         {

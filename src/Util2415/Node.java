@@ -13,11 +13,11 @@ public class Node
     
     public double leftTicks;
     public double rightTicks;
-    public double frisbeesShot;
+    public int frisbeesShot;
     public double armAngle;
     public boolean isIntakeOn;
     
-    public Node(double leftTicks, double rightTicks, double frisbeesShot, double armAngle, double isIntakeOn)
+    public Node(double leftTicks, double rightTicks, int frisbeesShot, double armAngle, double isIntakeOn)
     {
         this.leftTicks = leftTicks;
         this.rightTicks = rightTicks;
@@ -28,6 +28,11 @@ public class Node
         
     }
     
+    
+    public String toString()
+    {
+        return leftTicks + " " + rightTicks + " " + frisbeesShot + " " + armAngle + " " + isIntakeOn;
+    }
     
     
 }

@@ -12,6 +12,7 @@ package edu.wpi.first.wpilibj.templates;
  * since we do not want to constantly add new systems
  */
 
+import Util2415.LogReader;
 import Util2415.WiredCatsLogger;
 import WiredCatsControllers.*;
 import WiredCatsEvents.WiredCatsEventListener;
@@ -21,6 +22,7 @@ import WiredCatsSystems.*;
 
 //Specific utilities
 import Util2415.TXTReader;
+import WiredCatsEvents.AutonomousCommands.CommandNewDesiredPosition;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.SimpleRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -39,7 +41,7 @@ public class WiredCats2415 extends SimpleRobot
 {
 
     public static TXTReader textReader;
-    //public WiredCatsLogger logWriter;
+    public WiredCatsLogger logWriter;
     
     private Vector listeners = new Vector(5);
     private Vector threads = new Vector(5);
@@ -48,7 +50,7 @@ public class WiredCats2415 extends SimpleRobot
     private ControllerShooter controllerShooter;
     private ControllerArm controllerArm;
     private ControllerDrive controllerDrive;
-    //private ControllerAutonomous controllerAutonomous;
+    private ControllerAutonomous controllerAutonomous;
     
     private SystemDrive systemDrive;
     private SystemShooter systemShooter;
@@ -61,23 +63,23 @@ public class WiredCats2415 extends SimpleRobot
     {
         textReader = new TXTReader();
         textReader.getFromFile("CheesyConfig.txt");
-//        logWriter.newLog();
     }
     
     public WiredCats2415() {
         
-        compressor = new Compressor(5, 1);
+        //compressor = new Compressor(9, 10);
         
-        //logWriter = new WiredCatsLogger();
-        //threads.addElement(new Thread(logWriter));
+        
         initControllers();
         initDrive();
         initShooter();
         initIntake();
         initArm();
+//        initAutonomous();
+//        initLogger();
         
-        //logWriter.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
-        //controllerAutonomous.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
+        
+
         
         for (int i = 0; i < threads.size(); i++) {
             ((Thread) (threads.elementAt(i))).start();
@@ -92,26 +94,39 @@ public class WiredCats2415 extends SimpleRobot
     public void disabled() 
     { 
         fireEvent(new EventDisabled(this)); 
-        //if (logWriter.isOpen()) logWriter.close();
+//        if (logWriter.isOpen()) logWriter.close();
         textReader.getFromFile("CheesyConfig.txt");
-        //controllerAutonomous.stop();
+//        controllerAutonomous.stop();
         super.getWatchdog().feed();
     }
     public void autonomous() 
     { 
+        System.out.println("AUTONOMOUS.");
         //TODO make 100 dollars.
         controllerDrive.resetEncoders();
         fireEvent(new EventAutonomous(this)); 
-        compressor.start();
-        //controllerAutonomous.begin();
+        
+        LogReader lr = new LogReader();
+        Vector nodes = lr.readLog("PlayBook/testAutonomous.txt");
+        for (int i = 0; i < nodes.size(); i++)
+        {
+            System.out.println(nodes.elementAt(i));
+        }
+        System.out.println("length: " + nodes.size());
+
+//Node(double leftTicks, double rightTicks, int frisbeesShot, double armAngle, double isIntakeOn)
+        
+//        compressor.start();
+//        controllerAutonomous.begin();
+        //systemDrive.eventReceived(new CommandNewDesiredPosition(this, 100, 100, 0));
         //super.getWatchdog().feed();
     }
     public void operatorControl() 
     { 
         fireEvent(new EventTeleop(this)); 
-        //if (!logWriter.isOpen()) logWriter.newLog();
-        //controllerAutonomous.stop();
-        compressor.start();
+//        if (!logWriter.isOpen()) logWriter.newLog();
+//        controllerAutonomous.stop();
+//        compressor.start();
 //        super.getWatchdog().feed();
     }
 
@@ -120,19 +135,19 @@ public class WiredCats2415 extends SimpleRobot
      * This function starts up controllers and adds them to threads
      */
     private void initControllers() {
+        controllerDrive = new ControllerDrive(5);
         controllerGamePad = new ControllerGamePad(5);
         controllerShooter = new ControllerShooter(5, this);
         controllerArm = new ControllerArm(5);
-        controllerDrive = new ControllerDrive(5);
-        //controllerAutonomous = new ControllerAutonomous(5);
+        
+
 
         threads.addElement(new Thread(controllerGamePad));
         threads.addElement(new Thread(controllerShooter));
         threads.addElement(new Thread(controllerArm));
         threads.addElement(new Thread(controllerDrive));
-        //threads.addElement(new Thread(controllerAutonomous));
+        threads.addElement(new Thread(controllerAutonomous));
         
-        //logWriter.addControllers(controllerIntake, controllerShooter, controllerDrive);
         //SmartDashboard.putString("Logger File Name Base", "CHANGEME");
     }
     
@@ -166,9 +181,23 @@ public class WiredCats2415 extends SimpleRobot
     
     private void initArm()
     {
-        systemArm = new SystemArm();
+        systemArm = new SystemArm(controllerShooter);
         controllerArm.addEventListener(systemArm);
         initSystem(systemArm);
+    }
+    
+    private void initLogger()
+    {
+        logWriter = new WiredCatsLogger();
+        threads.addElement(new Thread(logWriter));
+        logWriter.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
+        logWriter.addControllers(controllerArm, controllerShooter, controllerDrive);
+    }
+    
+    private void initAutonomous()
+    {
+        controllerAutonomous = new ControllerAutonomous(5);
+        controllerAutonomous.addSystems(systemDrive, systemIntake, systemShooter, systemArm);
     }
 
     /**

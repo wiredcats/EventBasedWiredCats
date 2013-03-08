@@ -121,7 +121,6 @@ public class ControllerGamePad extends WiredCatsController implements Runnable {
             else fireEvent(new EventLeftPushDownReleased(this, whichController));
         }
         
-        
         oldGP.updateValues();
     }
 
@@ -160,7 +159,7 @@ public class ControllerGamePad extends WiredCatsController implements Runnable {
             updateValues();
         }
         
-        public void updateValues() {
+        public final void updateValues() {
             button_A = js.getRawButton(1);
             button_B = js.getRawButton(2);
             button_X = js.getRawButton(3);
