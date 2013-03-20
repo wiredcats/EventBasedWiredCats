@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.templates.WiredCats2415;
 
 /**
- * Basically a collection of variables that correspond to Joystick values. More
- * of a C++ struct than a class in use.
+ * Basically a collection of variables that correspond to Joystick values. 
+ * More of a C++ struct than a class in use.
  *
  * @author Robotics
  */
@@ -24,8 +24,7 @@ public class ControllerGamePad extends WiredCatsController implements Runnable {
     
     Timer timer;
 
-    public ControllerGamePad(int limit) 
-    {
+    public ControllerGamePad(int limit) {
         super(limit);
         
         oldPrimaryGP = new GamePad(new Joystick(1));

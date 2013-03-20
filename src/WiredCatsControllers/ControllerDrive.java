@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package WiredCatsControllers;
 
 import WiredCatsEvents.SensorEvents.EventPositionChanged;
@@ -37,9 +33,10 @@ public class ControllerDrive extends WiredCatsController
     {
         super(limit);
         //TODO
-        leftEncoder = new Encoder(7, 8);  // 7, 8
-        rightEncoder = new Encoder(5, 6);  //5, 6
+        leftEncoder = new Encoder(3,4);  //competition: 3,4 / practice: 8,7
+        rightEncoder = new Encoder(2,1); //competition: 2,1 / practice: 6,5
         gyro = new Gyro(2);
+        
         leftEncoderDistance = 0;
         rightEncoderDistance = 0;
         lastLeftEncoderDistance = 0;
@@ -61,26 +58,17 @@ public class ControllerDrive extends WiredCatsController
         rightEncoder.reset();
     }
     
-    public int getLeftTicks(){
-        return leftEncoder.get();
-    }
+    public int getLeftTicks() { return leftEncoder.get(); }
     
-    public int getRightTicks(){
-        return rightEncoder.get();
-    }
+    public int getRightTicks() { return rightEncoder.get(); }
     
-    public double getGyro()
-    {
-        return gyro.getAngle();
-    }
+    public double getGyro() { return gyro.getAngle(); }
 
-    public void run()
-    {
+    public void run() {
         leftEncoder.start();
         rightEncoder.start();
-        while (true)
-        {
-                
+        
+        while (true) {
             leftEncoderDistance = leftEncoder.get();
             rightEncoderDistance = rightEncoder.get();
             gyroValue = gyro.getAngle();
@@ -98,12 +86,12 @@ public class ControllerDrive extends WiredCatsController
             }
             
             SmartDashboard.putNumber("gyro", gyroValue);
+            
             try {
-                Thread.sleep(15);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            
         }
     } 
 }

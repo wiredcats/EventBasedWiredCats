@@ -1,34 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package WiredCatsSystems;
 
-import WiredCatsEvents.AutonomousCommands.CommandIntake;
-import WiredCatsEvents.AutonomousCommands.CommandNewArmAngle;
-import WiredCatsEvents.AutonomousCommands.CommandStopIntake;
+import WiredCatsEvents.AutonomousCommands.CommandIntakeOn;
+import WiredCatsEvents.AutonomousCommands.CommandIntakeOff;
 import WiredCatsEvents.EventGamePad;
-import WiredCatsEvents.GamePadEvents.EventButtonAPressed;
-import WiredCatsEvents.GamePadEvents.EventButtonAReleased;
-import WiredCatsEvents.GamePadEvents.EventButtonBPressed;
-import WiredCatsEvents.GamePadEvents.EventButtonBReleased;
-import WiredCatsEvents.GamePadEvents.EventButtonXPressed;
-import WiredCatsEvents.GamePadEvents.EventButtonXReleased;
-import WiredCatsEvents.GamePadEvents.EventButtonYPressed;
-import WiredCatsEvents.GamePadEvents.EventButtonYReleased;
-import WiredCatsEvents.GamePadEvents.EventDPadXAxisMoved;
-import WiredCatsEvents.GamePadEvents.EventLeftBumperPressed;
-import WiredCatsEvents.GamePadEvents.EventLeftTriggerPressed;
-import WiredCatsEvents.GamePadEvents.EventLeftTriggerReleased;
-import WiredCatsEvents.GamePadEvents.EventRightBumperPressed;
-import WiredCatsEvents.GamePadEvents.EventRightTriggerPressed;
-import WiredCatsEvents.GamePadEvents.EventRightTriggerReleased;
-import WiredCatsEvents.SensorEvents.EventArmAngleChanged;
+import WiredCatsEvents.GamePadEvents.*;
 import WiredCatsEvents.WiredCatsEvent;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.templates.WiredCats2415;
 
 /**
  *
@@ -38,97 +16,56 @@ public class SystemIntake extends WiredCatsSystem
 {
     private Victor intakeMotor;
     
-    private Timer incrementTimer;
-    
-    private boolean isIncrementing;
-    
-    public SystemIntake()
-    {
+    public SystemIntake() {
         super();
-        //TODO find out the victor ports.
-        intakeMotor = new Victor(4);
-        incrementTimer = new Timer();
+        intakeMotor = new Victor(4); // Both bots: 4
         System.out.println("[WiredCats] Initialized System Intake.");
-        
     }
     
-    public void doDisabled(WiredCatsEvent event) 
-    {
+    public void doDisabled(WiredCatsEvent event) {
         intakeMotor.set(0.0);
-        
     }
     
-    public void doEnabled(WiredCatsEvent event)
-    {
+    public void doEnabled(WiredCatsEvent event) {
         
     }
 
-    public void doAutonomousSpecific(WiredCatsEvent event) 
-    {
-        if (event instanceof CommandIntake)
-        {
-            intakeMotor.set(-1*0.75);
+    public void doAutonomousSpecific(WiredCatsEvent event) {
+        if (event instanceof CommandIntakeOn) {
+            intakeMotor.set(1.0);
         }
-        else if (event instanceof CommandStopIntake)
-        {
+        else if (event instanceof CommandIntakeOff) {
             intakeMotor.set(0.0);
         }
-        
     }
 
-    public void doTeleopSpecific(WiredCatsEvent event) 
-    {  
-        
-//        propConstant = SmartDashboard.getNumber("propConstant");
-//        integralConstant = SmartDashboard.getNumber("integralConstant");
-//        derivativeConstant = SmartDashboard.getNumber("derivativeConstant");
-        //desiredArmAngle = SmartDashboard.getNumber("desiredArmAngle");
-        
-        
+    public void doTeleopSpecific(WiredCatsEvent event) { 
         if (event instanceof EventGamePad) handleGamePadEvents((EventGamePad)event);
-        
     }
     
-    private void handleGamePadEvents(EventGamePad event)
-    {
-        if (event instanceof EventLeftTriggerPressed && event.isController1())
-        {
+    private void handleGamePadEvents(EventGamePad event) {
+        //Intake normally
+        if (event instanceof EventLeftTriggerPressed && event.isController1()) {
             intakeMotor.set(1.0);
         }
-        else if (event instanceof EventLeftTriggerReleased && event.isController1())
-        {
+        else if (event instanceof EventLeftTriggerReleased && event.isController1()) {
             intakeMotor.set(0.0);
         }
-        else if (event instanceof EventRightTriggerPressed && event.isController1())
-        {
+        
+        //Intake while shooting
+        else if (event instanceof EventRightTriggerPressed && event.isController1()) {
             intakeMotor.set(1.0);
         }
-        else if (event instanceof EventRightTriggerReleased && event.isController1())
-        {
+        else if (event instanceof EventRightTriggerReleased && event.isController1()) {
             intakeMotor.set(0.0);
         }
-        else if (event instanceof EventButtonYPressed && event.isController1())
-        {
+        
+        //Backdrive
+        else if (event instanceof EventButtonYPressed && event.isController1()) {
             intakeMotor.set(-1.0);
         }
-        else if (event instanceof EventButtonYReleased && event.isController1())
-        {
+        else if (event instanceof EventButtonYReleased && event.isController1()) {
             intakeMotor.set(0.0);
         }
-       
     }
-
-    
-    public double isIntakeOn()
-    {
-        if (intakeMotor.get() != 0.0)
-        {
-            return 1;
-        }
-        else 
-        {
-            return 0;
-        }
-    }
-    
 }

@@ -20,11 +20,9 @@ import edu.wpi.first.wpilibj.templates.WiredCats2415;
  *
  * @author BruceCrane
  */
-public class SystemDrive extends WiredCatsSystem 
-{
-
-    private Talon left;
-    private Talon right;
+public class SystemDrive extends WiredCatsSystem {
+    private Talon leftTalon;
+    private Talon rightTalon;
     
     private double driveDeadband;
     
@@ -36,18 +34,13 @@ public class SystemDrive extends WiredCatsSystem
     private double leftEncoderDistance;
     private double rightEncoderDistance;
     
-    private double gyroAngle;
-    
-    private double leftPower;
-    private double rightPower;
-    
-    private double lastTime;
-    
     private double leftIntegral;
     private double rightIntegral;
     
     private double lastLeftError;
     private double lastRightError;
+    
+    private boolean movingForward;
     
     private double kp;
     private double ki;
@@ -56,175 +49,187 @@ public class SystemDrive extends WiredCatsSystem
     public SystemDrive() {
         super();
 
-        left = new Talon(2);
-        right = new Talon(7); //was 1.        
+        leftTalon = new Talon(2); // Both bots: 2
+        rightTalon = new Talon(1); //Both bots: 1
         leftDesiredEncoderDistance = 0;
         rightDesiredEncoderDistance = 0;
 
         driveDeadband = WiredCats2415.textReader.getValue("driveDeadband");
         driveGain = WiredCats2415.textReader.getValue("driveGain");
         
-        gyroAngle = 0;
-        lastTime = 0;
-        
-        leftIntegral = 0;
-        rightIntegral = 0;
         lastLeftError = 0;
         lastRightError = 0;
         
-        SmartDashboard.putNumber("driveDeadband", driveDeadband);
-        SmartDashboard.putNumber("driveGain", driveGain);
-        
         kp = WiredCats2415.textReader.getValue("propConstantDrive");
-        SmartDashboard.putNumber("propConstantDrive", kp);
         ki = WiredCats2415.textReader.getValue("integralConstantDrive");
-        SmartDashboard.putNumber("integralConstantDrive", ki);
         kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
-        SmartDashboard.putNumber("derivativeConstantDrive", kd);
-        
-        
+           
         System.out.println("[WiredCats] Initialized System Drive");
-
     }
     
-    public void doDisabled(WiredCatsEvent event) 
-    {
-        kp = SmartDashboard.getNumber("propConstantDrive");
-        ki = SmartDashboard.getNumber("integralConstantDrive");
-        kd = SmartDashboard.getNumber("derivativeConstantDrive");
-        driveDeadband = SmartDashboard.getNumber("driveDeadband");
-        driveGain = SmartDashboard.getNumber("driveGain");
+    public void doDisabled(WiredCatsEvent event) {
+        kp = WiredCats2415.textReader.getValue("propConstantDrive");
+        ki = WiredCats2415.textReader.getValue("integralConstantDrive");
+        kd = WiredCats2415.textReader.getValue("derivativeConstantDrive");
+        driveDeadband = WiredCats2415.textReader.getValue("driveDeadband");
+        driveGain = WiredCats2415.textReader.getValue("driveGain");
         
-        left.set(0.0);
-        right.set(0.0);
+        leftTalon.set(0.0);
+        rightTalon.set(0.0);
         leftIntegral = 0.0;
         rightIntegral = 0.0;
+        
+        lastLeftError = 0;
+        lastRightError = 0;
     }
     
     public void doEnabled(WiredCatsEvent event) {};
     
-    public void doAutonomousSpecific(WiredCatsEvent event) 
-    {
-        if (event instanceof CommandNewDesiredPosition)
-        {
-            System.out.println("NEW DESIRED POSITION");
+    public void doAutonomousSpecific(WiredCatsEvent event) {
+        if (event instanceof CommandNewDesiredPosition) {
               
             changeDesiredPosition(((CommandNewDesiredPosition)event).leftEncoder,
                     ((CommandNewDesiredPosition)event).rightEncoder);
-            
         }
-        else if (event instanceof EventPositionChanged)
-        {
-            gyroAngle = ((EventPositionChanged)event).time;
+        else if (event instanceof EventPositionChanged) {
             leftEncoderDistance = ((EventPositionChanged)event).leftEncoder;
             rightEncoderDistance = ((EventPositionChanged)event).rightEncoder;
             
+            //If we get to the setpoint, stop moving
+
+
             //compensate for error.
-            double deltaTime = ((EventPositionChanged)event).time - lastTime;
             double leftError = leftDesiredEncoderDistance - leftEncoderDistance;
             double rightError = rightDesiredEncoderDistance - rightEncoderDistance;
             
-            if (deltaTime > 1)
-            {
-                leftIntegral = 0;
-                rightIntegral = 0;
-            }
-            else 
-            {
-               leftIntegral += leftError * deltaTime;
-               rightIntegral += rightError * deltaTime;
-            }
+            //Integral
+            leftIntegral += leftError;
+            rightIntegral += rightError;
             
-            double leftDerivative = (leftError - lastLeftError)/deltaTime;
-            double rightDerivative = (rightError - lastRightError)/deltaTime;
+            //Derivative
+            double leftDerivative = (leftError - lastLeftError);
+            double rightDerivative = (rightError - lastRightError);
             
             lastLeftError = leftError;
             lastRightError = rightError;
             
-            lastTime = ((EventPositionChanged)event).time;
-            
             double leftPower = kp*leftError + ki*leftIntegral + kd*leftDerivative;
             double rightPower = kp*rightError + ki*rightIntegral + kd*rightDerivative;
+
+            //If your error is within +/- 10, then stop autonomous, you've reached destination
+//            if ( (leftError > -10 && leftError < 10) &&
+//                    (rightError > -10 && rightError < 10) &&
+//                    autonomous_state == AUTONOMOUS_ATTEMPTING)
+//            {
+//                 autonomous_state = AUTONOMOUS_COMPLETED;
+//                 return;
+//            }
             
-            if ( (leftPower < 0.1 && leftPower > -.1) &&
-                    (rightPower <0.1 && rightPower > -.1) &&
-                    autonomous_state == AUTONOMOUS_ATTEMPTING)
-                autonomous_state = AUTONOMOUS_COMPLETED;
+            if (movingForward) {
+                if (leftError < 0 || rightError < 0) 
+                {
+                    leftTalon.set(0);
+                    rightTalon.set(0);
+                    if (autonomous_state == AUTONOMOUS_ATTEMPTING)
+                    {
+                        autonomous_state = AUTONOMOUS_COMPLETED;
+                        System.out.println("The bot is moving forwards, and we have made it to our destination");
+                    }
+                    return;
+                }
+            } else {
+                if (leftError > 0 || rightError > 0)
+                {
+                    leftTalon.set(0);
+                    rightTalon.set(0);
+                    if (autonomous_state == AUTONOMOUS_ATTEMPTING)
+                    {
+                        autonomous_state = AUTONOMOUS_COMPLETED;
+                        System.out.println("The bot is moving backwards, and we have made it to our destination");
+                    }
+                    return;
+                }
+            }
+
+            System.out.println("leftPower: " + leftPower);
+            System.out.println("rightPower: " + rightPower);
+            System.out.println("leftError: " + leftError);
+            System.out.println("rightError: " + rightError);
+            System.out.println("");
             
-            left.set(setPower(leftPower));
-            //right.set(setPower(rightPower));
+            leftPower = capMaxValue(leftPower, 0.75); 
+            rightPower = capMaxValue(rightPower, 0.75);
+            
+            leftTalon.set(-1*leftPower);
+            rightTalon.set(rightPower);
         }
     }
     
-    public void doTeleopSpecific(WiredCatsEvent event) 
-    {
-        //System.out.println(events.getSize());
-        
+    public void doTeleopSpecific(WiredCatsEvent event) {
         if (event instanceof EventLeftYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
-                left.set(setVictorValues(((EventLeftYAxisMoved) event).y));
-//                System.out.println("left: " + setVictorValues(((EventLeftYAxisMoved) event).y));
+                leftTalon.set(linearizeTalon(((EventLeftYAxisMoved) event).y));
             }
         } else if (event instanceof EventRightYAxisMoved) {
             if (((EventGamePad) event).isController1()) {
-                right.set(-1*setVictorValues(((EventRightYAxisMoved)event).y));
-//                System.out.println("right: " + setVictorValues(((EventRightYAxisMoved) event).y));
+                rightTalon.set(-1*linearizeTalon(((EventRightYAxisMoved)event).y));
             }
         }
     }
 
-    /**
-     * This figures out all the things that are needed to consider when setting the victor value. 
-     *
-     * @param value
-     * @return
-     */
-    private double setVictorValues(double value) 
-    {
-        
+    private double linearizeTalon(double value)  {
         double a = driveGain;
         double b = driveDeadband;
         
-        
-        if (value >= 0)
-        {
+        if (value >= 0) {
             if (value < b) return 0;
-            
             return b + (1-b)*(a*MathUtils.pow(value, 1) + (1-a)*value);
         }
-        else
-        {
-            if (value > -1*b) return 0;
-            
+        else {
+            if (value > -1*b) return 0;       
             return -1*b + (1-b)*(a*MathUtils.pow(value, 1) + (1-a)*value);
         }
     }
-
     
-    private double setPower(double d)
-    {
-            if (d > 1.0) 
-            {
-                return 1.0;
-            } 
-            else if (d < -1.0)
-            {
-                return -1.0;
-            }
-            else
-            {
-                return d;
-            }
+    private double capMaxValue(double d, double limit) {
+        if (d > limit) {
+            return limit;
+        } else if (d < -limit) {
+            return -limit;
+        } else {
+            return d;
+        }
     }
     
-    private void changeDesiredPosition(double newLeftValue, double newRightValue)
-    {
-        if (leftDesiredEncoderDistance > newLeftValue) left.set(0.1);
-        else left.set(-.1);
-        if (rightDesiredEncoderDistance > newRightValue) right.set(0.1);
-        else right.set(-.1);
+    /**
+     * Provides kickstart for PID Loops to start
+     * Otherwise, bot will not move and no "EventPositionChanged" event will be emitted
+     * (Messy solution)
+     */
+    
+    private void changeDesiredPosition(double newLeftValue, double newRightValue) {
+        if (leftDesiredEncoderDistance == newLeftValue && rightDesiredEncoderDistance == newRightValue) {
+            autonomous_state = AUTONOMOUS_COMPLETED;
+            System.out.println("We were already at our destination.");
+            return;
+        } else {
+            autonomous_state = AUTONOMOUS_ATTEMPTING;
+        }
+        
+        if (leftDesiredEncoderDistance > newLeftValue) leftTalon.set(-0.2);
+        else if (leftDesiredEncoderDistance < newLeftValue) leftTalon.set(0.2);
+        else leftTalon.set(0.0);
+        
+        System.out.println("we were not already at our destination.");
+        
+        if (rightDesiredEncoderDistance > newRightValue) rightTalon.set(0.2);
+        else if (rightDesiredEncoderDistance < newRightValue) rightTalon.set(-0.2);
+        else rightTalon.set(0.0);
         
         leftDesiredEncoderDistance = newLeftValue;          
         rightDesiredEncoderDistance = newRightValue;  
+        
+        if (leftDesiredEncoderDistance > leftEncoderDistance) movingForward = true;
+        else movingForward = false;
     }
 }

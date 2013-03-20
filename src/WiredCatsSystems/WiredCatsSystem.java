@@ -49,15 +49,13 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
                         }
                     
                         if(state == STATE_DISABLED) doDisabled(event);
-                        else
-                        {
+                        else {
                            doEnabled(event);
                            if(state == STATE_AUTONOMOUS) doAutonomousSpecific(event);
                            else if(state == STATE_TELEOP) doTeleopSpecific(event);  
-                        }
-                                      
+                        }   
                     }
-                update();
+                update(); //Any constant activity that you have that is not reliant on events
                 Thread.sleep(1);        
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
@@ -66,21 +64,29 @@ public abstract class WiredCatsSystem implements Runnable, WiredCatsEventListene
     }
     
     public abstract void doDisabled(WiredCatsEvent event);
+    public abstract void doEnabled(WiredCatsEvent event);
     public abstract void doAutonomousSpecific(WiredCatsEvent event);
     public abstract void doTeleopSpecific(WiredCatsEvent event);
-    public abstract void doEnabled(WiredCatsEvent event);
     
-    public final byte autonomous_AtDesiredNode()
-    {
-        if (autonomous_state == AUTONOMOUS_COMPLETED)
-        {
+    /**
+     * Basically checks on status of nodes.
+     * Only used by autonomous controller to check on status of each system
+     * 
+     * If instructions on nodes are completed, 
+     * then the autonomous mode will wait for the next node instruction
+     * and report that the specific instruction has been completed
+     * 
+     * Otherwise, it will tell the autonomous controller it is not completed
+     */
+    public final byte autonomous_AtDesiredNode() {
+        if (autonomous_state == AUTONOMOUS_COMPLETED) {
             autonomous_state = AUTONOMOUS_WAITING;
             return AUTONOMOUS_COMPLETED;
         }
         return autonomous_state;
     }
 
-    public void update() {}
+    public void update() {} //Other classes can fill this in if they want to
     
     /**
      * An abstract method that is called by any RobotController that this system

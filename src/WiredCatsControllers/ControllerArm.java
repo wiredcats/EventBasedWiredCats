@@ -5,7 +5,7 @@
 package WiredCatsControllers;
 
 import WiredCatsEvents.SensorEvents.EventArmAngleChanged;
-import WiredCatsEvents.SensorEvents.EventFrisbeeTaken;
+import WiredCatsEvents.SensorEvents.EventArmLimitReached;
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
@@ -16,12 +16,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *
  * @author Bruce Crane
  */
-public class ControllerArm extends WiredCatsController
-{
-
-    
+public class ControllerArm extends WiredCatsController {
     //private DigitalInput ls;
-    private AnalogChannel arm;
+    private Encoder armEncoder;
+    private DigitalInput upperBoundSwitch;
     
     private double armAngle;
     
@@ -30,38 +28,37 @@ public class ControllerArm extends WiredCatsController
     public ControllerArm(int limit)
     { 
         super(limit); 
-        //ls = new DigitalInput(7);
-        arm = new AnalogChannel(1);
-        armAngle = arm.getValue();
+        armAngle = armEncoder.get();
         timer = new Timer();
         timer.start();
+        
+        armEncoder = new Encoder(8,9);
+        //Get Digital Input place.
+        upperBoundSwitch = new DigitalInput(10);
         
         System.out.println("[WiredCats] Arm Controller initialized.");
     }
     
-    public void run() 
+    public void run()
     {
         //fireEvent(new EventArmAngleChanged(this, armAngle));
+        armEncoder.start();
         while (true)
         {
             //System.out.println("Pot reading: " + arm.getValue());
                 
-            SmartDashboard.putNumber("POT reading (getValue): ", arm.getValue());
-            //System.out.println("Arm Value: " + arm.getValue());
-                //System.out.println(arm.getValue());
-            //SmartDashboard.putNumber("POT reading (getVoltage): ", arm.getVoltage());
-            //get pot of absolutely up.
-            //get pot of absolutely down.
-            //154
+            SmartDashboard.putNumber("POT reading (getValue): ", armEncoder.getDistance());
+            SmartDashboard.putNumber("Arm Encoder: ", armEncoder.get());
             
-            double currentArmAngle = arm.getValue();
+            double currentArmAngle = armEncoder.getDistance();
             if (armAngle != currentArmAngle)
             {
-                //System.out.println("arm angle changed. " + currentArmAngle);
                 armAngle = currentArmAngle;
                 fireEvent(new EventArmAngleChanged(this, armAngle, timer.get()));
             }
-
+            
+            if (upperBoundSwitch.get()) armEncoder.reset();
+            
             try {
                 Thread.sleep(15);
             } catch (InterruptedException ex) {

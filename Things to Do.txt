@@ -1,0 +1,68 @@
+
+LONG TERM:
+
+- Strategy Team
+   - have a team that has two functions:
+	- To strategize for our team.
+	- To strategize for our teammates.
+- We have to have a well defined strategy for every
+  player, based off of past strategies by opponents.
+- Scouting should have more prestige.
+	This is not a job for the other people,
+	it is a job that requires training,
+	and precision.
+		This is the defining factor
+		of our robotics team.
+- This team should be intimidating.
+
+- These people should be trained in negotiations.
+
+
+- Creating our own team.
+	- Find long term funding.
+		- Corporate funding.
+- Get away from Westminster.
+- 
+
+
+- incorporate under 4H, tag team insurance.
+- boyscouts?
+
+- drivers should not be lead mechanicals.
+
+
+
+
+Intake - 67.8
+Hover - 60
+Back - 38.2
+Front - 32
+Hard Stop - 14
+
+
+
+******IMPORTANT CHECKLIST (every match):******
+- Make sure correct autonomous is uploaded
+- SAVE OFF BOARD COPY OF WIREDCATS CONFIG
+
+- autonomous tuning (getting encoder values position for position)
+--- set point of auto position should be higher for lag side
+---  give a little distance for coasting
+
+Update
+- Driver station: 2.12.13
+- Java: 2013.0.429
+- 2009 classmate => 2013 specs
+
+TODO: 
+- Config Github on Windows
+- Remove redundant code from TXTReader and AutonomousReader (both accomplish same function and AutonomousReader does not need to use "#" as EOF) (Do this after )
+- Check out what the "Log to CSV" is for the Smart Dashboard
+- Find out how to preserve layout in Smart Dashboard (ARGH)
+- Make a toggle switch on Smart Dashboard to turn on and off autowrite
+- The Autowrite sucks, fix it.
+
+
+PERHAPS:
+- calibrate shooting timers. (reduce cocking time?)
+- 	other timers can be adjusted.

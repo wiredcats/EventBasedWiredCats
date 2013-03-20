@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package WiredCatsSystems;
 
 import WiredCatsEvents.AutonomousCommands.CommandShoot;
@@ -23,7 +19,6 @@ import edu.wpi.first.wpilibj.templates.WiredCats2415;
  * @author Robotics
  */
 public class SystemShooter extends WiredCatsSystem {
-
     private Victor wheel1;
     private Victor wheel2;
     
@@ -34,197 +29,181 @@ public class SystemShooter extends WiredCatsSystem {
     private Solenoid gateUp;
     private Solenoid gateDown;
     
-    Timer xTimer = new Timer();
-    Timer yTimer = new Timer();
-    Timer zTimer = new Timer();
+    Timer fireTimer = new Timer();
+    Timer cockTimer = new Timer();
+    Timer interCockTimer = new Timer();
+    Timer interFireTimer = new Timer();
     
-    double xTime;
-    double yTime;
-    double zTime;
+    double fireTime;
+    double cockTime;
+    double interCockTime;
+    double interFireTime;
     
     private boolean autoShoot;
     
     private int frisbeesShot;
-    
-    private boolean is1BangOn;
-    private boolean is2BangOn;
-    
-    private boolean isRightBumperDown;
 
     public SystemShooter() {
         super();
-        wheel1 = new Victor(6);
-        wheel2 = new Victor(5);
+        wheel1 = new Victor(5); // Both bots: 5
+        wheel2 = new Victor(6); // Both bots: 6
 
-        cockOn = new Solenoid(1);
-        cockOff = new Solenoid(2);
-        fireOn = new Solenoid(5);
-        fireOff = new Solenoid(6);
-        gateUp = new Solenoid(3);
-        gateDown = new Solenoid(4);
+        cockOn = new Solenoid(4); //competition: 4 / practice: 1
+        cockOff = new Solenoid(3); //competition: 3 / practice: 2
+        fireOn = new Solenoid(6); // competition: 6 / practice: 5
+        fireOff = new Solenoid(5); // competition: 5 / practice 6
+        gateUp = new Solenoid(1); // competition: 1 / practice 3
+        gateDown = new Solenoid(2); // competition: 2 / practice 4
 
         autoShoot = false;
         
         frisbeesShot = 0;
-        is1BangOn = true;
-        is2BangOn = true;
         
-        xTime = WiredCats2415.textReader.getValue("xTime");
-        SmartDashboard.putNumber("xTime", xTime);
-        yTime = WiredCats2415.textReader.getValue("yTime");
-        SmartDashboard.putNumber("yTime", yTime);
-        zTime = WiredCats2415.textReader.getValue("zTime");
-        SmartDashboard.putNumber("zTime", zTime);
+        fireTime = WiredCats2415.textReader.getValue("fireTime");
+        cockTime = WiredCats2415.textReader.getValue("cockTime");
+        interCockTime = WiredCats2415.textReader.getValue("interCockTime");
+        interFireTime = WiredCats2415.textReader.getValue("interFireTime");
         
         System.out.println("[WiredCats] Initialized System Shooter");
     }
     
     public void doDisabled(WiredCatsEvent event) {
         cock(false);
-        
         fire(false);
-        
         gate(true);
         
-        xTime = SmartDashboard.getNumber("xTime");
-        yTime = SmartDashboard.getNumber("yTime");
-        zTime = SmartDashboard.getNumber("zTime");
+        fireTime = WiredCats2415.textReader.getValue("fireTime");
+        cockTime = WiredCats2415.textReader.getValue("cockTime");
+        interCockTime = WiredCats2415.textReader.getValue("interCockTime");
+        interFireTime = WiredCats2415.textReader.getValue("interFireTime");
         
+        autoShoot = false;
+    }
+
+    public void doEnabled(WiredCatsEvent event) {
+        //If speed over desired, turn off motor
+        if (event instanceof EventOverDesiredSpeed) {
+            if (((EventOverDesiredSpeed) event).isFirstWheel) {
+                wheel1.set(0.0);
+            } else {
+                wheel2.set(0.0);
+            }
+        //If speed under desired, motor is full power
+        } else if (event instanceof EventUnderDesiredSpeed) {
+            if (((EventUnderDesiredSpeed) event).isFirstWheel) {
+                wheel1.set(1.0);
+            } else {
+                wheel2.set(1.0);
+            }
+        }
     }
     
-    public void doAutonomousSpecific(WiredCatsEvent event) 
-    {
-        if (event instanceof CommandShoot)
-        {
-            //autoshoot = true;
+    public void doAutonomousSpecific(WiredCatsEvent event) {
+        if (event instanceof CommandShoot) {  //Assumes that only one shot per node
+            autonomous_state = AUTONOMOUS_ATTEMPTING;
+            cock(true);
+            fire(false);
+            gate(false);
+            fireTimer.reset();
+            fireTimer.start();
         }
     }
     
     private void gamepadEventListener(EventGamePad eventgp) {
-        if (eventgp instanceof EventRightTriggerPressed && eventgp.isController1() && isRightBumperDown) 
-        {
+        //Right trigger is actual fire
+        //Right bumper is safety
+        if (eventgp instanceof EventRightTriggerPressed && eventgp.isController1()) {
             autoShoot = true;
-            if (!(xTimer.get()>0 || yTimer.get() >0 || zTimer.get() >0))
-            {
+            
+            if (!(fireTimer.get() > 0 
+                    || cockTimer.get() > 0 
+                    || interCockTimer.get() > 0
+                    || interFireTimer.get() > 0)) { //If none of the timers are going, reset back to the beginning
                 cock(true);
                 fire(false);
-                gate(false);
-                xTimer.start();
-                //System.out.println("0");
-            }
+                gate(true);
+                fireTimer.start();
+            } 
         } else if (eventgp instanceof EventRightTriggerReleased && eventgp.isController1()) {
             autoShoot = false;
-        }
-        else if (eventgp instanceof EventRightBumperPressed && eventgp.isController1())
+        } else if (eventgp instanceof EventLeftTriggerPressed && eventgp.isController1())
         {
-            isRightBumperDown = true;
-        }
-        else if (eventgp instanceof EventRightBumperReleased && eventgp.isController1())
-        {
-            isRightBumperDown = false;
+            cock(true);
         }
     }
     
-    private void doAutoShoot() 
-    {
-            if (xTimer.get() > xTime && !is1BangOn && !is2BangOn)
-            {
-                cock(false);
-                fire(true);
-                gate(false);
-                xTimer.stop();
-                xTimer.reset();
-                yTimer.start();
-                frisbeesShot++; 
-            }
+    private void doAutoShoot() {
+        //First time firing / loop to beginning
+        if (fireTimer.get() > fireTime) { //If we're not getting up to speed, we should be relatively at speed
+            cock(false);
+            fire(false);
+            gate(false);
+            fireTimer.stop();
+            fireTimer.reset();
+            interCockTimer.start();
+            frisbeesShot++;
+        }
+        
+        if (interCockTimer.get() >= interCockTime)
+        {
+            cock(false);
+            fire(true);
+            gate(false);
+            interCockTimer.stop();
+            interCockTimer.reset();
+            cockTimer.start();
+        }
+
+        //Cocking is finished, so reset back to original position
+        if (cockTimer.get() > cockTime) {
+            cock(true);
+            fire(false);
+            gate(false);
+            cockTimer.stop();
+            cockTimer.reset();
+            interFireTimer.start();
+        }
+
+        //Reset everything back to resting state
+        if (interFireTimer.get() > interFireTime) {
+            cock(false);
+            fire(false);
+            interFireTimer.stop();
+            interFireTimer.reset();
             
-            if (yTimer.get() > yTime)
-            {
-                cock(true);
-                fire(false);
+            if (autoShoot) { //Begin the cycle again
+                fireTimer.start();
                 gate(false);
-                yTimer.stop();
-                yTimer.reset();
-                zTimer.start();
-                //System.out.println("Y");
-            }
-            
-            if (zTimer.get() > zTime)
-            {
-                cock(false);
-                fire(false);
-                zTimer.stop();
-                zTimer.reset();
-                //System.out.println("Z");
-                if (autoShoot)
-                {
-                    xTimer.start();
-                    gate(false);
-                }
-                else
-                {
-                    gate(true);
+            } else { //Otherwise, put the gate up
+                gate(true);
+                if (autonomous_state == AUTONOMOUS_ATTEMPTING) {
+                    autonomous_state = AUTONOMOUS_COMPLETED; //Tells autonomous that we are done
                 }
             }
+        }
     }
     
-    public void update()
-    {
+    public void update() {
         doAutoShoot();
     }
     
-    public void doEnabled(WiredCatsEvent event)
-    {
-            if(event instanceof EventOverDesiredSpeed) {
-                if(((EventOverDesiredSpeed) event).isFirstWheel) {
-                    wheel1.set(0.0);
-                    is1BangOn = false;
-//                    System.out.println("1 bang off");
-                } else {
-                    wheel2.set(0.0);     
-//                    System.out.println("2 bang off");
-                    is2BangOn = false;
-                }
-                
-            }
-            else if(event instanceof EventUnderDesiredSpeed) {
-                if(((EventUnderDesiredSpeed) event).isFirstWheel) {
-                        wheel1.set(-1.0);
-//                        System.out.println("1 bang on");
-                        is1BangOn = true;
-                    } else{
-                        wheel2.set(-1.0);
-//                        System.out.println("2 bang on");
-                        is2BangOn = true;
-                    }
-                }
-    }
-    
-    public void doTeleopSpecific(WiredCatsEvent event) 
-    {    
-        //System.out.println(events.getSize());
+    public void doTeleopSpecific(WiredCatsEvent event) {    
         if(event instanceof EventGamePad) gamepadEventListener((EventGamePad) event);
     }
-    private void cock(boolean b)
-    {
+    private void cock(boolean b) {
         cockOff.set(!b);
         cockOn.set(b);
     }
     
-    private void fire(boolean b)
-    {
+    private void fire(boolean b) {
         fireOff.set(!b);
         fireOn.set(b);
     }
     
-    private void gate(boolean b)
-    {
+    private void gate(boolean b) {
         gateUp.set(b);
         gateDown.set(!b);
     }
     
-    public int getFrisbeesShot()
-    {
-        return frisbeesShot;
-    }
+    public int getFrisbeesShot() { return frisbeesShot; }
 }

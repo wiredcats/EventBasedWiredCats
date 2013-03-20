@@ -1,5 +1,7 @@
 package Util2415;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 /**
@@ -39,6 +41,22 @@ public class TXTReader {
 
     public boolean contains(String s) {
         return resources.contains(s);
+    }
+    
+    public void pushToSmartDashboard()
+    {
+        Enumeration keys = resources.keys();
+        String key;
+        while (keys.hasMoreElements())
+        {
+            key = (String)keys.nextElement();
+            SmartDashboard.putNumber(key, getValue(key));
+        }
+    }
+    
+    public Enumeration getKeys()
+    {
+        return resources.keys();
     }
     
     /*

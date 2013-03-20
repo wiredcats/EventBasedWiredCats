@@ -39,8 +39,7 @@ public class BlockingQueue {
         return temp;
     }
     
-    public int getSize()
-    {
+    public int getSize() {
         return queue.size();
     }
 

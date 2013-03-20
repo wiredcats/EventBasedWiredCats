@@ -1,0 +1,68 @@
+Start
+L: 609
+R: 631
+
+Front Pyramid
+L: 1714
+R: 1784
+
+Front Pyramid in code
+L: 1373
+R: 1421
+
+End of Field
+L: 3055
+R: 3128
+
+End of Field in code
+L: 2079
+R: 2122
+
+
+-------------
+
+Start
+L: 0
+R; 0
+
+Front Pyramid
+L: 2422
+R: 2414
+
+Front Pyramid in code
+L: 4200
+R: 4220
+
+End of field
+L: 6013
+R: 6033
+
+End of Field in code:
+L: 4900
+R: 4917
+
+
+--------------------
+
+
+.98257
+
+Start
+L: 6
+R: -4
+
+Front Pyramid:
+L: 2330
+R: -2442
+
+End of field
+L: 5581
+R: -5680
+
+
+
+
+
+
+
+
