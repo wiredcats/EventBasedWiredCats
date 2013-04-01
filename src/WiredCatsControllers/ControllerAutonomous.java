@@ -105,12 +105,15 @@ public class ControllerAutonomous extends WiredCatsController {
                 
                 if (sd.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     driveReady = true;
+                    System.out.println("The drive system has completed");
                 }
                 if (sa.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     armReady = true;
+                    System.out.println("The arm system has completed");
                 }
                 if (ss.autonomous_AtDesiredNode() == WiredCatsSystem.AUTONOMOUS_COMPLETED){
                     shooterReady = true;
+                    System.out.println("The shooting system has completed");
                 }
                 
                 if (driveReady && armReady && shooterReady){

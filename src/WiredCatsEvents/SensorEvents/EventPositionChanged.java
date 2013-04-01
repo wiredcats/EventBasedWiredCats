@@ -12,11 +12,11 @@ import WiredCatsEvents.WiredCatsEvent;
  */
 public class EventPositionChanged extends WiredCatsEvent
 {
-    public int leftEncoder;
-    public int rightEncoder;
+    public double leftEncoder;
+    public double rightEncoder;
     public double time;
     
-    public EventPositionChanged(Object source, int leftEncoder, int rightEncoder, double time)
+    public EventPositionChanged(Object source, double leftEncoder, double rightEncoder, double time)
     {
         super(source);
         this.leftEncoder = leftEncoder;

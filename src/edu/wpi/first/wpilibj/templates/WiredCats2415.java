@@ -24,8 +24,8 @@ import WiredCatsSystems.*;
 //Specific utilities
 import Util2415.TXTReader;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.SimpleRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Vector; 
 
 
@@ -68,10 +68,9 @@ public class WiredCats2415 extends SimpleRobot {
     public WiredCats2415() {
         textWriter = new TXTWriter();
         
-        compressor = new Compressor(5, 1);
+        compressor = new Compressor(5, 8);
         
         textReader.pushToSmartDashboard();
-        SmartDashboard.putBoolean("autoUpdate", true);
         
         initControllers();
         initDrive();
@@ -95,6 +94,7 @@ public class WiredCats2415 extends SimpleRobot {
     public void disabled() { 
         fireEvent(new EventDisabled(this)); 
         controllerAutonomous.stop();
+        textWriter.update();
         super.getWatchdog().feed();
     }
     
@@ -130,8 +130,6 @@ public class WiredCats2415 extends SimpleRobot {
         compressor.start();
         fireEvent(new EventTeleop(this)); 
         controllerAutonomous.stop();
-        if (SmartDashboard.getBoolean("autoUpdate"))
-            textWriter.update();
         super.getWatchdog().feed();
     }
 
@@ -171,6 +169,7 @@ public class WiredCats2415 extends SimpleRobot {
     private void initShooter() {
         systemShooter = new SystemShooter();
         controllerShooter.addEventListener(systemShooter);
+        controllerArm.addEventListener(systemShooter);
         initSystem(systemShooter);
     }
     

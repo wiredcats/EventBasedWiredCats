@@ -17,11 +17,11 @@ public class ControllerDrive extends WiredCatsController
     private Encoder rightEncoder;
     private Gyro gyro;
     
-    private int leftEncoderDistance;
-    private int rightEncoderDistance;
+    private double leftEncoderDistance;
+    private double rightEncoderDistance;
     
-    private int lastLeftEncoderDistance;
-    private int lastRightEncoderDistance;
+    private double lastLeftEncoderDistance;
+    private double lastRightEncoderDistance;
     
     public double lastGyroValue;
     
@@ -69,8 +69,8 @@ public class ControllerDrive extends WiredCatsController
         rightEncoder.start();
         
         while (true) {
-            leftEncoderDistance = leftEncoder.get();
-            rightEncoderDistance = rightEncoder.get();
+            leftEncoderDistance = leftEncoder.get()/1000.0;
+            rightEncoderDistance = rightEncoder.get()/1000.0;
             gyroValue = gyro.getAngle();
             
             SmartDashboard.putNumber("leftEncoderDistance", leftEncoderDistance);

@@ -116,15 +116,6 @@ public class SystemDrive extends WiredCatsSystem {
             double leftPower = kp*leftError + ki*leftIntegral + kd*leftDerivative;
             double rightPower = kp*rightError + ki*rightIntegral + kd*rightDerivative;
 
-            //If your error is within +/- 10, then stop autonomous, you've reached destination
-//            if ( (leftError > -10 && leftError < 10) &&
-//                    (rightError > -10 && rightError < 10) &&
-//                    autonomous_state == AUTONOMOUS_ATTEMPTING)
-//            {
-//                 autonomous_state = AUTONOMOUS_COMPLETED;
-//                 return;
-//            }
-            
             if (movingForward) {
                 if (leftError < 0 || rightError < 0) 
                 {
@@ -157,8 +148,8 @@ public class SystemDrive extends WiredCatsSystem {
             System.out.println("rightError: " + rightError);
             System.out.println("");
             
-            leftPower = capMaxValue(leftPower, 0.75); 
-            rightPower = capMaxValue(rightPower, 0.75);
+            leftPower = capMaxValue(leftPower, 0.80); 
+            rightPower = capMaxValue(rightPower, 0.80);
             
             leftTalon.set(-1*leftPower);
             rightTalon.set(rightPower);
@@ -208,7 +199,10 @@ public class SystemDrive extends WiredCatsSystem {
      */
     
     private void changeDesiredPosition(double newLeftValue, double newRightValue) {
-        if (leftDesiredEncoderDistance == newLeftValue && rightDesiredEncoderDistance == newRightValue) {
+        if (leftDesiredEncoderDistance < newLeftValue + .05 &&
+                leftDesiredEncoderDistance > newLeftValue - .05
+                && rightDesiredEncoderDistance < newRightValue + .05
+                && rightDesiredEncoderDistance > newRightValue - .05) {
             autonomous_state = AUTONOMOUS_COMPLETED;
             System.out.println("We were already at our destination.");
             return;
@@ -216,20 +210,36 @@ public class SystemDrive extends WiredCatsSystem {
             autonomous_state = AUTONOMOUS_ATTEMPTING;
         }
         
-        if (leftDesiredEncoderDistance > newLeftValue) leftTalon.set(-0.2);
-        else if (leftDesiredEncoderDistance < newLeftValue) leftTalon.set(0.2);
+        leftIntegral = 0;
+        rightIntegral = 0;
+        
+        if (leftDesiredEncoderDistance > newLeftValue) leftTalon.set(0.2);
+        else if (leftDesiredEncoderDistance < newLeftValue) leftTalon.set(-0.2);
         else leftTalon.set(0.0);
         
         System.out.println("we were not already at our destination.");
         
-        if (rightDesiredEncoderDistance > newRightValue) rightTalon.set(0.2);
-        else if (rightDesiredEncoderDistance < newRightValue) rightTalon.set(-0.2);
+        if (rightDesiredEncoderDistance > newRightValue) rightTalon.set(-0.2);
+        else if (rightDesiredEncoderDistance < newRightValue) rightTalon.set(0.2);
         else rightTalon.set(0.0);
         
         leftDesiredEncoderDistance = newLeftValue;          
         rightDesiredEncoderDistance = newRightValue;  
         
-        if (leftDesiredEncoderDistance > leftEncoderDistance) movingForward = true;
-        else movingForward = false;
+        if (leftDesiredEncoderDistance < leftEncoderDistance) movingForward = false;
+        else movingForward = true;
+    }
+    
+    private int integralDrive;
+    private int encoderError;
+    private int desiredEncoderValue;
+    
+    private void gyroEncoderPID(int encoderValue, double gyro){
+        
+        int encoderError = desiredEncoderValue - encoderValue;
+        
+        integralDrive += encoderError;
+        
+        
     }
 }

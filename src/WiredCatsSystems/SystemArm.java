@@ -9,6 +9,7 @@ import WiredCatsEvents.AutonomousCommands.CommandNewArmAngle;
 import WiredCatsEvents.EventGamePad;
 import WiredCatsEvents.GamePadEvents.*;
 import WiredCatsEvents.SensorEvents.EventArmAngleChanged;
+import WiredCatsEvents.SensorEvents.EventArmLimitReached;
 import WiredCatsEvents.WiredCatsEvent;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -43,6 +44,8 @@ public class SystemArm extends WiredCatsSystem
     
     private boolean isManualControl;
     
+    private boolean armHasBeenReset;
+    
     public SystemArm(ControllerShooter cs) {
         super();
         this.shooter = cs;
@@ -58,9 +61,11 @@ public class SystemArm extends WiredCatsSystem
         hoverPreset = WiredCats2415.textReader.getValue("hoverPreset");
         upperBoundHardStop = WiredCats2415.textReader.getValue("upperBoundHardStop");
 
-        desiredArmAngle = frontPyramidPreset;
+        desiredArmAngle = 0;
         
         isManualControl = false;
+        
+        armHasBeenReset = false;
         
         System.out.println("[WiredCats] Initialized System Arm.");
     }
@@ -79,8 +84,14 @@ public class SystemArm extends WiredCatsSystem
     }
 
     public void doEnabled(WiredCatsEvent event) {
-        if (event instanceof EventArmAngleChanged) {
-            actualArmAngle = ((EventArmAngleChanged)event).getAngle()/10;
+        if (event instanceof EventArmLimitReached)
+        {
+            this.armHasBeenReset = true;
+            desiredArmAngleChanged(0.5);
+            if (arm.get() < 0.0) arm.set(0.0);
+        }
+        else if (event instanceof EventArmAngleChanged && armHasBeenReset) {
+            actualArmAngle = ((EventArmAngleChanged)event).getAngle();
             if (isManualControl) return;
             double error = desiredArmAngle - actualArmAngle;
             
@@ -92,20 +103,17 @@ public class SystemArm extends WiredCatsSystem
             double power = kp*error + ki*integral + kd*derivative;
             
             //If within deadband of 0.3, autonomous is done
-            if (error < 1 && error > -1 
+            if (error < .08 && error > -.08 
                     && autonomous_state == AUTONOMOUS_ATTEMPTING)
             {
                 autonomous_state = AUTONOMOUS_COMPLETED;
             }
             
-            //if the arm is too high.
-            if (((EventArmAngleChanged)event).getAngle() <= upperBoundHardStop)
-            {
-                power = 0;
-                desiredArmAngleChanged(actualArmAngle);
-            }
+//            System.out.println("power: " + power);
+//            System.out.println("error: " + error);
+//            System.out.println("");
             
-            if (power > 1.0) power = 1.0;
+            if (power > 1.0) power = 0.7;
             else if (power < -1.0) power = -1.0;
             arm.set(power);
         }
@@ -124,7 +132,9 @@ public class SystemArm extends WiredCatsSystem
     }
     
     public void update(){
-
+        if (!armHasBeenReset) {
+            arm.set(-0.3);
+        }
     }
     
      private void handleGamePadEvents(EventGamePad event) {
@@ -175,6 +185,8 @@ public class SystemArm extends WiredCatsSystem
      {
          if (desiredArmAngle > newAngle) arm.set(-.2);
          else arm.set(.2);
+         
+         integral = 0;
          
          desiredArmAngle = newAngle;
      }
