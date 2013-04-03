@@ -12,7 +12,6 @@ package edu.wpi.first.wpilibj.templates;
  * since we do not want to constantly add new systems
  */
 
-import Util2415.TXTWriter;
 import Util2415.AutonomousReader;
 //import Util2415.WiredCatsLogger;
 import WiredCatsControllers.*;
@@ -46,8 +45,6 @@ public class WiredCats2415 extends SimpleRobot {
     
 //    public WiredCatsLogger logWriter;
     
-    public TXTWriter textWriter;
-    
     private Vector listeners = new Vector(5);
     private Vector threads = new Vector(5);
     
@@ -66,11 +63,10 @@ public class WiredCats2415 extends SimpleRobot {
     private Compressor compressor;
     
     public WiredCats2415() {
-        textWriter = new TXTWriter();
         
         compressor = new Compressor(5, 8);
         
-        textReader.pushToSmartDashboard();
+//        textReader.pushToSmartDashboard();
         
         initControllers();
         initDrive();
@@ -94,7 +90,7 @@ public class WiredCats2415 extends SimpleRobot {
     public void disabled() { 
         fireEvent(new EventDisabled(this)); 
         controllerAutonomous.stop();
-        textWriter.update();
+        textReader.getFromFile("WiredCatsConfig.txt");
         super.getWatchdog().feed();
     }
     
@@ -128,8 +124,9 @@ public class WiredCats2415 extends SimpleRobot {
     
     public void operatorControl() { 
         compressor.start();
-        fireEvent(new EventTeleop(this)); 
+        fireEvent(new EventTeleop(this));
         controllerAutonomous.stop();
+        textReader.getFromFile("WiredCatsConfig.txt");
         super.getWatchdog().feed();
     }
 

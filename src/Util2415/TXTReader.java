@@ -43,17 +43,6 @@ public class TXTReader {
         return resources.contains(s);
     }
     
-    public void pushToSmartDashboard()
-    {
-        Enumeration keys = resources.keys();
-        String key;
-        while (keys.hasMoreElements())
-        {
-            key = (String)keys.nextElement();
-            SmartDashboard.putNumber(key, getValue(key));
-        }
-    }
-    
     public Enumeration getKeys()
     {
         return resources.keys();

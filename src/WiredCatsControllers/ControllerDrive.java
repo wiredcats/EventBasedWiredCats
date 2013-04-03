@@ -73,9 +73,6 @@ public class ControllerDrive extends WiredCatsController
             rightEncoderDistance = rightEncoder.get()/1000.0;
             gyroValue = gyro.getAngle();
             
-            SmartDashboard.putNumber("leftEncoderDistance", leftEncoderDistance);
-            SmartDashboard.putNumber("rightEncoderDistance", rightEncoderDistance);
-            
             if (leftEncoderDistance != lastLeftEncoderDistance ||
                    rightEncoderDistance != lastRightEncoderDistance)
             {
@@ -84,8 +81,6 @@ public class ControllerDrive extends WiredCatsController
                 lastGyroValue = gyroValue;
                 fireEvent( new EventPositionChanged(this, leftEncoderDistance, rightEncoderDistance, timer.get()));
             }
-            
-            SmartDashboard.putNumber("gyro", gyroValue);
             
             try {
                 Thread.sleep(50);

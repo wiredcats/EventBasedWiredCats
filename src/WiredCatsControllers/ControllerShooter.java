@@ -56,8 +56,6 @@ public class ControllerShooter extends WiredCatsController {
             
               encoder1Rate = encoder1.get() / (timer.get() * 2); //convertig fromt ticks per second, to revolutions per minute.
               encoder2Rate = encoder2.get() / (timer.get() * 2);
-              SmartDashboard.putNumber("Wheel 1 Speed", encoder1Rate);
-              SmartDashboard.putNumber("Wheel 2 Speed", encoder2Rate);
               
               encoder1.stop();
               encoder1.reset();
@@ -73,8 +71,6 @@ public class ControllerShooter extends WiredCatsController {
               
             
               if (robot.isDisabled()) {
-                     desiredEncoder1Speed = SmartDashboard.getNumber("desiredEncoder1Speed");
-                     desiredEncoder2Speed = SmartDashboard.getNumber("desiredEncoder2Speed");
               }
               else {
                 if (encoder1Rate > desiredEncoder1Speed){

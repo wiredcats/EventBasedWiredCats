@@ -54,8 +54,6 @@ public class ControllerArm extends WiredCatsController {
         {
             
             //System.out.println("Pot reading: " + arm.getValue());
-                
-            SmartDashboard.putNumber("Arm Encoder: ", armEncoder.getDistance() / 100);
             
             double currentArmAngle = armEncoder.getDistance()/100;
 //            if (armAngle != currentArmAngle)
