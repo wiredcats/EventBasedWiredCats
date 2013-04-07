@@ -1,4 +1,3 @@
-
 LONG TERM:
 
 - Strategy Team
@@ -7,16 +6,6 @@ LONG TERM:
 	- To strategize for our teammates.
 - We have to have a well defined strategy for every
   player, based off of past strategies by opponents.
-- Scouting should have more prestige.
-	This is not a job for the other people,
-	it is a job that requires training,
-	and precision.
-		This is the defining factor
-		of our robotics team.
-- This team should be intimidating.
-
-- These people should be trained in negotiations.
-
 
 - Creating our own team.
 	- Find long term funding.
